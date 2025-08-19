@@ -1,1 +1,11 @@
-print("Hello world, from client!")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local knit = require(ReplicatedStorage.Packages.knit)
+
+knit.AddContollers(script.Controllers)
+knit.Start()
+	:andThen(function()
+		print("[Knit] Client started successfully")
+	end)
+	:catch(function(err)
+		warn("[Knit] Error starting client: " .. tostring(err))
+	end)

@@ -6,5 +6,8 @@ realm = "shared"
 
 [dependencies]
 promise = "evaera/promise@4.0.0"
+trove = "sleitnick/trove@1.5.1"
+goodsignal = "stravant/goodsignal@0.3.0"
+knit = "sleitnick/knit@1.7.0"
 
 [server-dependencies]
