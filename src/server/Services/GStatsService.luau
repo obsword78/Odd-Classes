@@ -2,27 +2,31 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local knit = require(ReplicatedStorage.Packages.knit)
 
-local GStatsService = knit.createService({
-    Name = "GStatsService",
-    Client = {},
+local GStatsService = knit.CreateService({
+	Name = "GStatsService",
+	Client = {},
 })
 
-local Stats = require(ReplicatedStorage.Shared.Classes.Stats)
+local GStats = require(ReplicatedStorage.Shared.Classes.GStats)
 
-function GStatsService.Init()
+function GStatsService:KnitInit()
 	print("[GStatsService] Initialized")
 
 	workspace.ChildAdded:Connect(function(child)
-        if not Players:GetPlayerFromCharacter(child) then return end
-        local character = child
-        local humanoid = character:WaitForChild("Humanoid", 10)
+		local player = Players:GetPlayerFromCharacter(child)
+		if not player then
+			return
+		end
+		local character = child
+		local humanoid = character:WaitForChild("Humanoid", 10)
 
-        if not humanoid then
-            warn("[GStatsService] Humanoid not found in character")
-            return
-        end
+		if not humanoid then
+			warn("[GStatsService] Humanoid not found in character")
+			return
+		end
 
-        humanoid.WalkSpeed = 
+		local StatsInstance = GStats.new(character)
+		StatsInstance:ImprintHumanoid()
 	end)
 end
 
