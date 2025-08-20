@@ -1,7 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local knit = require(ReplicatedStorage.Packages.knit)
 
-local DamageService = knit.createService({
+local DamageService = knit.CreateService({
 	Name = "DamageService",
 	Client = {},
 })
