@@ -1,7 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local knit = require(ReplicatedStorage.Packages.knit)
 
-knit.AddContollers(script.Controllers)
+knit.AddControllers(script.Controllers)
 knit.Start()
 	:andThen(function()
 		print("[Knit] Client started successfully")
