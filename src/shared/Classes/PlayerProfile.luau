@@ -11,14 +11,9 @@ function PlayerProfile.new(player: Player, registryTable, storeProfile): PlayerP
 end
 
 function PlayerProfile:SetData(dataName: PlayerProfileData, value: any)
-	if self._data[dataName] ~= nil then
-		self._data[dataName] = value
-
-		if self._storeProfile.Data[dataName] then
-			self._storeProfile.Data[dataName] = value
-		end
-	else
-		error("Invalid data name: " .. tostring(dataName))
+	self._data[dataName] = value
+	if self._storeProfile and self._storeProfile.Data[dataName] then
+		self._storeProfile.Data[dataName] = value
 	end
 end
 
@@ -35,11 +30,8 @@ end
 
 export type PlayerProfile = {
 	player: Player,
-	data: {
-		SelectedClass: string?,
-		Inventory: {},
-		Rox: number,
-	},
+	SetData: (PlayerProfile, PlayerProfileData, any) -> nil,
+	GetData: (PlayerProfile, PlayerProfileData) -> any,
 }
 
 type PlayerProfileData = "Inventory" | "Rox" | "SelectedClass"

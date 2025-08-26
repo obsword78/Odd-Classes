@@ -9,3 +9,7 @@ knit.Start()
 	:catch(function(err)
 		warn("[Knit] Error starting client: " .. tostring(err))
 	end)
+
+local ClassController = knit.GetController("ClassController")
+task.wait(2)
+ClassController:Select("Physical")

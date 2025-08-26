@@ -7,13 +7,11 @@ local trove = require(ReplicatedStorage.Packages.trove)
 
 local PlayerService = knit.CreateService({
 	Name = "PlayerService",
-	Client = {
-		ClassSelected = knit.CreateSignal(),
-	},
+	Client = {},
 })
 --=============================================================
 local PlayerProfile = require(ReplicatedStorage.Shared.Classes.PlayerProfile)
-local playerProfiles = {}
+local playerProfiles: { [Player]: PlayerProfile.PlayerProfile } = {}
 ---------------------------------------------------------------
 local PROFILE_TEMPLATE = {
 	Inventory = {},
@@ -69,7 +67,9 @@ function PlayerService:GetPlayerProfile(player: Player): PlayerProfile.PlayerPro
 	return playerProfiles[player]
 end
 
-function PlayerService.Client.ClassSelected(player: Player) end
+function PlayerService.Client:SelectClass(player: Player, className: string)
+	playerProfiles[player]:SetData("SelectedClass", className)
+end
 
 return PlayerService
 

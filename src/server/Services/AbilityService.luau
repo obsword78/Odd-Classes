@@ -1,48 +1,41 @@
---!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local Ability = require(ServerScriptService.Server.Classes.Ability)
-local AbilityInstance = require(ServerScriptService.Server.Classes.AbilityInstance)
+local AbilityInstance = require(ReplicatedStorage.Shared.Classes.AbilityInstance)
+local AbilityDefinitions = require(ServerScriptService.Server.Data.ServerAbilityDefinitions)
 local knit = require(ReplicatedStorage.Packages.knit)
 
-local AbilityService = knit:CreateService({
+local AbilityService = knit.CreateService({
 	Name = "AbilityService",
 	Client = {},
 })
 
-AbilityService.Abilities = {} -- [name] = Ability
 AbilityService.Cooldowns = {} -- [player][abilityName] = time
 AbilityService.ActiveInstances = {} -- [player] = {instances...}
 
--- Register an ability
-function AbilityService:RegisterAbility(definition)
-	local ability = Ability.new(definition)
-	self.Abilities[ability.Name] = ability
-	return ability
-end
-
 -- Cast ability
-function AbilityService:Cast(player, abilityName, params)
-	local ability = self.Abilities[abilityName]
-	if not ability then
+function AbilityService.Client:Cast(player, abilityName)
+	local server = self.Server
+	local abilityDef = AbilityDefinitions[abilityName]
+	if not abilityDef then
 		return
 	end
 
 	-- cooldown check
 	local now = os.clock()
-	self.Cooldowns[player] = self.Cooldowns[player] or {}
-	local cd = self.Cooldowns[player][abilityName]
+	server.Cooldowns[player] = server.Cooldowns[player] or {}
+	local cd = server.Cooldowns[player][abilityName]
 	if cd and now < cd then
 		return
 	end
 
 	-- start ability
-	local instance = AbilityInstance.new(ability, player, params)
-	table.insert(self.ActiveInstances[player] or {}, instance)
+	task.wait(abilityDef.CastTime)
+	local instance = AbilityInstance.new(abilityDef, player)
+	table.insert(server.ActiveInstances[player] or {}, instance)
 
 	-- set cooldown
-	if ability.Cooldown then
-		self.Cooldowns[player][abilityName] = now + ability.Cooldown
+	if abilityDef.Cooldown then
+		server.Cooldowns[player][abilityName] = now + abilityDef.Cooldown
 	end
 
 	return instance
