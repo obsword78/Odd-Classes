@@ -12,15 +12,22 @@ export type ClientAbilityDefinition = {
 	OnInterrupted: (() -> nil)?,
 }
 
+local Players = game:GetService("Players")
+
 local ClientAbilityDefinitions: { [string]: ClientAbilityDefinition } = {}
+
+local Player = Players.LocalPlayer
 
 ClientAbilityDefinitions.MovingForce = {
 	Name = "MovingForce",
 	CastTime = 0.5,
 	ChannelTime = 2,
-	ChannelTickRate = 0.1,
 
-	OnChannelTick = function() end,
+	Execute = function(caster: Player, params: { any }) end,
+	OnChannelTick = function(_, dT)
+		local character = Player.Character
+		character:PivotTo(character:GetPivot() * CFrame.new(0, 0, -100 * dT))
+	end,
 	OnInterrupted = function() end,
 }
 

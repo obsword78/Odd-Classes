@@ -12,7 +12,6 @@ export type ServerAbilityDefinition = {
 	MaxChargeTime: number?,
 
 	-- Channeling
-	ChannelTime: number?,
 	TickRate: number?, -- how often OnLingerTick/OnChannelTick triggers
 
 	-- Recasting
@@ -28,6 +27,7 @@ export type ServerAbilityDefinition = {
 	Execute: ((caster: any, ctx: any) -> any?)?,
 	OnCastEnd: ((caster: any, ctx: any, castData: any) -> ())?,
 
+	ChannelTime: number?,
 	OnChannelStart: ((caster: any, castData: any) -> ())?,
 	OnChannelTick: ((caster: any, castData: any) -> ())?,
 	OnInterrupted: ((caster: any, why: string, castData: any) -> ())?,
@@ -44,12 +44,13 @@ local ServerAbilityDefinitions: { [string]: ServerAbilityDefinition } = {}
 ServerAbilityDefinitions.MovingForce = {
 	Name = "MovingForce",
 	CastTime = 0.5,
+	MaxChargeTime = 1,
 	ChannelTime = 2,
 	TickRate = 0.1,
 
+	Execute = function(caster: Player, params: { any }) end,
 	OnChannelTick = function(caster: Player, castData)
 		local character = caster.Character
-		print(character, castData)
 	end,
 	OnInterrupted = function(caster: Player, reason, castData)
 		print(caster, reason, castData)
