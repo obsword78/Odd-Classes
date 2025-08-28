@@ -10,6 +10,25 @@ local AbilityController = knit.CreateController({
 AbilityController.Cooldowns = {} -- [abilityName] = time
 AbilityController.ActiveInstances = {} -- {instances...}
 
+function AbilityController:KnitInit()
+	task.defer(function()
+		while task.wait(10) do
+			local undeadInstances = {}
+			for _, activeInstance in pairs(AbilityController.ActiveInstances) do
+				if activeInstance:IsDead() then
+					continue
+				end
+				table.insert(undeadInstances, activeInstance)
+			end
+			if #undeadInstances <= 0 then
+				continue
+			end
+			table.clear(AbilityController.ActiveInstances)
+			table.move(undeadInstances, 1, #undeadInstances, 1, AbilityController.ActiveInstances)
+		end
+	end)
+end
+
 function AbilityController:Cast(abilityName: string)
 	local abilityDef = ClientAbilityDefinitions[abilityName]
 	if not abilityDef then
@@ -22,7 +41,6 @@ function AbilityController:Cast(abilityName: string)
 		return
 	end
 
-	task.wait(abilityDef.CastTime)
 	local instance = AbilityInstance.new(abilityDef)
 	table.insert(AbilityController.ActiveInstances, instance)
 
@@ -31,6 +49,23 @@ function AbilityController:Cast(abilityName: string)
 	end
 
 	return instance
+end
+
+function AbilityController:Release(abilityName: string)
+	local abilityDef = ClientAbilityDefinitions[abilityName]
+	if not abilityDef then
+		return
+	end
+
+	for _, activeInstance in pairs(AbilityController.ActiveInstances) do
+		if activeInstance:IsDead() or activeInstance.Def.Name ~= abilityName then
+			continue
+		end
+		if activeInstance.ChargeReleased ~= nil then
+			activeInstance.ChargeReleased = true
+		end
+		break
+	end
 end
 
 return AbilityController
