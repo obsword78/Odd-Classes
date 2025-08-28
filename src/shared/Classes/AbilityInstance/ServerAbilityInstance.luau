@@ -1,71 +1,104 @@
 local RunService = game:GetService("RunService")
 
-local AbilityInstance = {}
-AbilityInstance.__index = AbilityInstance
+local ServerAbilityInstance = {}
+ServerAbilityInstance.__index = ServerAbilityInstance
 
-function AbilityInstance.new(abilityDef, caster)
-	local self = setmetatable({}, AbilityInstance)
-	self.Definition = abilityDef
+local function _startCast(self)
+	task.wait(self.Def.CastTime)
+	self:_Flow(false)
+end
+local function _startCharge(self)
+	self.ChargeReleased = false
+	while not self.ChargeReleased and (os.clock() - self.StartTime) < (self.Def.MaxChargeTime or 3) do
+		task.wait()
+	end
+	self.State.TimeCharged = math.min(os.clock() - self.StartTime, self.Def.MaxChargeTime or 3)
+	self:_Flow(false)
+end
+local function _flow(self)
+	if self.Def.Execute then
+		self:_Execute()
+	end
+	if self.Def.ChannelTime then
+		self:_StartChannel()
+	end
+end
+
+function ServerAbilityInstance.new(abilityDef, caster)
+	local self = setmetatable({}, ServerAbilityInstance)
+	self.Def = abilityDef
 	self.Caster = caster
-	self.State = nil
+	self.State = {}
 
 	self.StartTime = os.clock()
+	self.StoppedChannel = false
 	self.Expired = false
 
-	-- Run Execute immediately
-	if abilityDef.Execute then
-		self.State = abilityDef.Execute(caster) or {}
-	end
+	abilityDef = nil -- cleanup variable
 
-	if abilityDef.ChannelTime then
-		self.TickConn = RunService.Heartbeat:Connect(function(dt)
-			self._tickElapsed = (self._tickElapsed or 0) + dt
-			if self._tickElapsed >= abilityDef.TickRate then
-				self._tickElapsed = 0
-				if abilityDef.OnChannelTick then
-					abilityDef.OnChannelTick(caster, self.State)
-				end
-			end
-		end)
-
-		task.delay(abilityDef.ChannelTime, function()
-			if not self.Expired then
-				self:Expire()
-			end
-		end)
-	end
-
-	-- Handle lingering effects
-	if abilityDef.Duration then
-		task.delay(abilityDef.Duration, function()
-			if not self.Expired then
-				self:Expire()
-			end
-		end)
+	if self.Def.Chargeable then
+		self:_StartCharge()
+	elseif self.Def.CastTime then
+		self:_StartCast()
+	else
+		self:_Flow(true)
 	end
 
 	return self
 end
 
-function AbilityInstance:TryRecast()
-	local abilityDef = self.Definition
-	if
-		abilityDef.Recast and (not abilityDef.RecastCondition or abilityDef.RecastCondition(self.Caster, self.State))
-	then
-		self.State = abilityDef.Recast(self.Caster, self.State) or self.State
-		return true
-	end
-	return false
+function ServerAbilityInstance:_StartCast()
+	task.spawn(_startCast, self)
 end
 
-function AbilityInstance:Expire()
-	self.Expired = true
-	if self.TickConn then
-		self.TickConn:Disconnect()
-	end
-	if self.Definition.OnExpire then
-		self.Definition.OnExpire(self.Caster, self.State)
+function ServerAbilityInstance:_StartCharge()
+	task.spawn(_startCharge, self)
+end
+
+function ServerAbilityInstance:_Flow(spawn: boolean?)
+	if spawn then
+		task.spawn(_flow, self)
+	else -- already running in spawn
+		_flow(self)
 	end
 end
 
-return AbilityInstance
+function ServerAbilityInstance:_Execute()
+	self.Def.Execute(self.Caster, self.State)
+end
+
+function ServerAbilityInstance:_StartChannel()
+	if not self.Def.ChannelConditions or self.Def.ChannelConditions(self.State) then
+		self._ChannelTickConn = RunService.Heartbeat:Connect(function(dt)
+			self._tickElapsed = (self._tickElapsed or 0) + dt
+			if self._tickElapsed >= (self.Def.ChannelTickRate or 0) then
+				if self.Def.OnChannelTick then
+					self.Def.OnChannelTick(self, dt)
+				end
+				self._tickElapsed = 0
+			end
+		end)
+
+		task.delay(self.Def.ChannelTime, function()
+			if not self.StoppedChannel then
+				self:StopChannel("ChannelRanOut")
+			end
+		end)
+	end
+end
+
+function ServerAbilityInstance:StopChannel(reason: string)
+	self.StoppedChannel = true
+	if self._ChannelTickConn then
+		self._ChannelTickConn:Disconnect()
+	end
+	if self.Def.OnInterrupted then
+		self.Def.OnInterrupted(self.Caster, reason)
+	end
+end
+
+function ServerAbilityInstance:IsDead()
+	return (self.Def.ChannelTime and self.StoppedChannel) or self.State.Dead
+end
+
+return ServerAbilityInstance
