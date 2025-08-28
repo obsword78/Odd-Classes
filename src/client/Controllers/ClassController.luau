@@ -28,7 +28,7 @@ function ClassController:Select(className: string)
 
 	InputController:DisconnectAllAbilities()
 	for abilityName, keycode in ClassInputs[className] do
-		InputController:ConnectAbility(keycode, abilityName)
+		InputController:ConnectAbility(abilityName, keycode)
 	end
 end
 
