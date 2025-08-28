@@ -2,6 +2,8 @@ local StaticAbilityDefinitions = require(script.Parent.StaticAbilityDefinitions)
 
 export type ClientAbilityDefinition = typeof(setmetatable(
 	{} :: {
+		Name: string,
+
 		CastAnimationId: string?,
 
 		Execute: ((state: { [string]: any }?) -> { [string]: any }?)?,
@@ -11,7 +13,7 @@ export type ClientAbilityDefinition = typeof(setmetatable(
 		OnChannelTick: (() -> nil)?,
 		OnInterrupted: ((reason: string) -> nil)?,
 	},
-	StaticAbilityDefinitions.SharedAbilityDefinition
+	StaticAbilityDefinitions.MetaTable
 ))
 --==========================================================
 local ClientAbilityDefinitions: { [string]: ClientAbilityDefinition } = {}
@@ -20,7 +22,7 @@ local Player = game:GetService("Players").LocalPlayer
 local Camera = workspace.CurrentCamera
 -------------------------
 ClientAbilityDefinitions.MovingForce = setmetatable({
-	ChannelTickRate = 0.1,
+	Name = "MovingForce",
 	ChannelAnimationId = "rbxassetid://6881035317",
 	Execute = function(state)
 		local character = Player.Character
@@ -59,6 +61,17 @@ ClientAbilityDefinitions.MovingForce = setmetatable({
 		character:PivotTo(pivotTo)
 
 		local charBBCFrame, charBBSize = character:GetBoundingBox()
+		-- local debugPart = Instance.new("Part")
+		-- debugPart.Anchored = true
+		-- debugPart.CanCollide = false
+		-- debugPart.CanTouch = false
+		-- debugPart.CanQuery = false
+		-- debugPart.Transparency = 0.8
+		-- debugPart.Color = Color3.fromRGB(0, 181, 0)
+		-- debugPart.CastShadow = false
+		-- debugPart.CFrame = charBBCFrame
+		-- debugPart.Size = charBBSize
+		-- debugPart.Parent = workspace
 		if #workspace:GetPartBoundsInBox(charBBCFrame, charBBSize, abilityInstance.State.OverlapParams) > 0 then
 			abilityInstance:StopChannel("Collision")
 		end
@@ -67,6 +80,6 @@ ClientAbilityDefinitions.MovingForce = setmetatable({
 		local character = Player.Character
 		character.Humanoid:ChangeState(Enum.HumanoidStateType.RunningNoPhysics)
 	end,
-}, StaticAbilityDefinitions.MovingForce)
+}, StaticAbilityDefinitions.MetaTable)
 
 return ClientAbilityDefinitions

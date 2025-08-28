@@ -1,5 +1,4 @@
 export type SharedAbilityDefinition = {
-	Name: string,
 	Cooldown: number?,
 
 	CastTime: number?,
@@ -10,11 +9,20 @@ export type SharedAbilityDefinition = {
 	ChannelTime: number?,
 }
 
+type LocalMetaTable = {
+	__index: (definition: any, index: string) -> any,
+}
+
 -- StaticAbilityDefinitions are basically all static data/functions that each Ability shares on both Client and Server
-local StaticAbilityDefinitions: { [string]: SharedAbilityDefinition } = {}
+local StaticAbilityDefinitions: { [string]: SharedAbilityDefinition | LocalMetaTable } = {}
+
+StaticAbilityDefinitions.MetaTable = {
+	__index = function(definition, index)
+		return StaticAbilityDefinitions[rawget(definition, "Name")][index]
+	end,
+}
 
 StaticAbilityDefinitions.MovingForce = {
-	Name = "MovingForce",
 	Cooldown = 5,
 	Chargeable = true,
 	MaxChargeTime = 0.4,

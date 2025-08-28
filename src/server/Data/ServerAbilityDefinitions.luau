@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StaticAbilityDefinitions = require(ReplicatedStorage.Shared.Data.StaticAbilityDefinitions)
 export type ServerAbilityDefinition = typeof(setmetatable(
 	{} :: {
+		Name: string,
 		-- ResourceCost: number? | ((caster: any) -> number)?,
 		-- CooldownIgnoresCDR: boolean?,
 
@@ -11,13 +12,14 @@ export type ServerAbilityDefinition = typeof(setmetatable(
 		OnChannelTick: ((caster: any, castData: any) -> ())?,
 		OnInterrupted: ((caster: any, reason: string) -> ())?,
 	},
-	StaticAbilityDefinitions.SharedAbilityDefinition
+	StaticAbilityDefinitions.MetaTable
 ))
 --=================================================
 local ServerAbilityDefinitions: { [string]: ServerAbilityDefinition } = {}
 
 ServerAbilityDefinitions.MovingForce = setmetatable({
-	ChannelTickRate = 0.1,
+	Name = "MovingForce",
+	ChannelTickRate = 0.02,
 	Execute = function(caster: Player, state)
 		local character = caster.Character
 
@@ -39,30 +41,52 @@ ServerAbilityDefinitions.MovingForce = setmetatable({
 	ChannelConditions = function(state: { [string]: any })
 		return state.TimeCharged == 0.4
 	end,
-	OnChannelTick = function(abilityInstance, dT)
+	OnChannelTick = function(abilityInstance, _dT)
 		local character = abilityInstance.Caster.Character
 
 		local charBBCFrame, charBBSize = character:GetBoundingBox()
-		local hit = {}
+		local serverLeeway = 5
+		-- local hit = {}
 
-		for _, object in
-			pairs(workspace:GetPartBoundsInBox(charBBCFrame, charBBSize, abilityInstance.State.OverlapParams))
-		do
-			if not object.Parent:IsA("Model") or table.find(hit, object.Parent) then
-				continue
-			end
-			table.insert(hit, object.Parent)
-		end
+		-- local debugPart = Instance.new("Part")
+		-- debugPart.Anchored = true
+		-- debugPart.CanCollide = false
+		-- debugPart.CanTouch = false
+		-- debugPart.CanQuery = false
+		-- debugPart.Transparency = 0.2
+		-- debugPart.Color = Color3.fromRGB(181, 0, 0)
+		-- debugPart.CastShadow = false
+		-- debugPart.CFrame = charBBCFrame
+		-- debugPart.Size = charBBSize + Vector3.new(0, 0, serverLeeway)
+		-- debugPart.Parent = workspace
 
-		if #hit > 0 then
-			-- for _, _objectHit in pairs(hit) do
-			-- end
+		if
+			#workspace:GetPartBoundsInBox(
+				charBBCFrame * CFrame.new(0, 0, -serverLeeway / 2),
+				charBBSize + Vector3.new(0, 0, serverLeeway),
+				abilityInstance.State.OverlapParams
+			) > 0
+		then
 			abilityInstance:StopChannel("Collision")
 		end
+
+		-- for _, object in
+		-- 	pairs(workspace:GetPartBoundsInBox(charBBCFrame, charBBSize, abilityInstance.State.OverlapParams))
+		-- do
+		-- 	if not object.Parent:IsA("Model") or table.find(hit, object.Parent) then
+		-- 		continue
+		-- 	end
+		-- 	table.insert(hit, object.Parent)
+		-- end
+
+		-- if #hit > 0 then
+		-- 	-- for _, _objectHit in pairs(hit) do
+		-- 	-- end
+		-- end
 	end,
-	OnInterrupted = function(caster: Player, reason: string)
-		print(caster, reason)
+	OnInterrupted = function(_caster: Player, _reason: string)
+		-- print(caster, reason)
 	end,
-}, StaticAbilityDefinitions.MovingForce)
+}, StaticAbilityDefinitions.MetaTable)
 
 return ServerAbilityDefinitions
