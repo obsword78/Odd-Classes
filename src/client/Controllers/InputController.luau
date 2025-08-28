@@ -20,6 +20,9 @@ local function CastAbility(actionName, inputState)
 	if inputState == Enum.UserInputState.Begin then
 		AbilityController:Cast(actionName)
 		AbilityService:Cast(actionName)
+	elseif inputState == Enum.UserInputState.End then
+		AbilityController:Release(actionName)
+		AbilityService:Release(actionName)
 	end
 end
 
