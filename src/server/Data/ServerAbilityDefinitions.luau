@@ -1,10 +1,12 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local knit = require(ReplicatedStorage.Packages.knit)
 local StaticAbilityDefinitions = require(ReplicatedStorage.Shared.Data.StaticAbilityDefinitions)
 export type ServerAbilityDefinition = typeof(setmetatable(
 	{} :: {
 		Name: string,
-		-- ResourceCost: number? | ((caster: any) -> number)?,
+		ResourceCost: number? | ((caster: any) -> number)?,
 		-- CooldownIgnoresCDR: boolean?,
+		OnCastStart: ((caster: Player) -> any?)?,
 
 		Execute: ((caster: any, ctx: any) -> any?)?,
 
@@ -17,9 +19,18 @@ export type ServerAbilityDefinition = typeof(setmetatable(
 --=================================================
 local ServerAbilityDefinitions: { [string]: ServerAbilityDefinition } = {}
 
+local CustomStatsService
+knit.OnStart():andThen(function()
+	CustomStatsService = knit.GetService("CustomStatsService")
+end)
+
 ServerAbilityDefinitions.MovingForce = setmetatable({
 	Name = "MovingForce",
 	ChannelTickRate = 0.02,
+	OnCastStart = function(caster: Player)
+		local entityStats = CustomStatsService:GetEntityStats(caster.Character)
+		entityStats:Increment("Stamina", -10)
+	end,
 	Execute = function(caster: Player, state)
 		local character = caster.Character
 
@@ -48,17 +59,8 @@ ServerAbilityDefinitions.MovingForce = setmetatable({
 		local serverLeeway = 5
 		-- local hit = {}
 
-		-- local debugPart = Instance.new("Part")
-		-- debugPart.Anchored = true
-		-- debugPart.CanCollide = false
-		-- debugPart.CanTouch = false
-		-- debugPart.CanQuery = false
-		-- debugPart.Transparency = 0.2
-		-- debugPart.Color = Color3.fromRGB(181, 0, 0)
-		-- debugPart.CastShadow = false
 		-- debugPart.CFrame = charBBCFrame
 		-- debugPart.Size = charBBSize + Vector3.new(0, 0, serverLeeway)
-		-- debugPart.Parent = workspace
 
 		if
 			#workspace:GetPartBoundsInBox(

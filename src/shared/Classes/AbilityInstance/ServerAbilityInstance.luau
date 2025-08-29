@@ -4,6 +4,9 @@ local ServerAbilityInstance = {}
 ServerAbilityInstance.__index = ServerAbilityInstance
 
 local function _startCast(self)
+	if self.Def.OnCastStart then
+		self.Def.OnCastStart(self.Caster)
+	end
 	task.wait(self.Def.CastTime)
 	self:_Flow(false)
 end
@@ -96,6 +99,8 @@ function ServerAbilityInstance:StopChannel(reason: string)
 		self.Def.OnInterrupted(self.Caster, reason)
 	end
 end
+
+function ServerAbilityInstance:FullInterrupt(reason: string) end
 
 function ServerAbilityInstance:IsDead()
 	return (self.Def.ChannelTime and self.StoppedChannel) or self.State.Dead
