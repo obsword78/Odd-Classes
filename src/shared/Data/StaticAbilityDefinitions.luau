@@ -1,11 +1,8 @@
 export type SharedAbilityDefinition = {
 	Cooldown: number?,
-
 	CastTime: number?,
-
 	Chargeable: boolean?, -- ability key can be held to charge it
 	MaxChargeTime: number?,
-
 	ChannelTime: number?,
 }
 
@@ -23,7 +20,7 @@ StaticAbilityDefinitions.MetaTable = {
 }
 
 StaticAbilityDefinitions.MovingForce = {
-	Cooldown = 5,
+	Cooldown = 10,
 	Chargeable = true,
 	MaxChargeTime = 0.4,
 	ChannelTime = 5,
