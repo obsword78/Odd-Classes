@@ -2,6 +2,11 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local knit = require(ReplicatedStorage.Packages.knit)
 local AbilityInstance = require(ReplicatedStorage.Shared.Classes.AbilityInstance)
 local ClientAbilityDefinitions = require(ReplicatedStorage.Shared.Data.ClientAbilityDefinitions)
+local BattleGuiController
+
+knit.OnStart():andThen(function()
+	BattleGuiController = knit.GetController("BattleGuiController")
+end)
 
 local AbilityController = knit.CreateController({
 	Name = "AbilityController",
@@ -46,6 +51,7 @@ function AbilityController:Cast(abilityName: string)
 
 	if abilityDef.Cooldown then
 		AbilityController.Cooldowns[abilityName] = now + abilityDef.Cooldown
+		BattleGuiController:RunCD(abilityDef.AbilitySlot, abilityDef.Cooldown)
 	end
 
 	return instance

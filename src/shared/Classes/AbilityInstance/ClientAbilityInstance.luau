@@ -1,13 +1,20 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ClientAbilityDefinitions = require(ReplicatedStorage.Shared.Data.ClientAbilityDefinitions)
+local RunService = game:GetService("RunService")
+local knit = require(ReplicatedStorage.Packages.knit)
+local BattleGuiController
+
+knit.OnStart():andThen(function()
+	BattleGuiController = knit.GetController("BattleGuiController")
+end)
 
 type AbilityInstanceState = {
 	TimeCharged: number?,
 	Dead: boolean?,
 }
 
-export type AbilityInstance = {
+type AbilityInstance = {
 	Def: ClientAbilityDefinitions.ClientAbilityDefinition,
 	State: AbilityInstanceState,
 	StartTime: number,
@@ -17,12 +24,11 @@ export type AbilityInstance = {
 	StopChannel: (self: AbilityInstance, reason: string) -> nil,
 }
 
-local RunService = game:GetService("RunService")
-
 local AbilityInstance = {}
 AbilityInstance.__index = AbilityInstance
 
 local function _startCast(self)
+	BattleGuiController:RunCastBar(self.Def.CastTime)
 	task.wait(self.Def.CastTime)
 	self:_Flow(false)
 end
@@ -104,6 +110,8 @@ function AbilityInstance:_StartChannel()
 			end
 		end)
 
+		BattleGuiController:RunChannelBar(self.Def.ChannelTime)
+
 		task.delay(self.Def.ChannelTime, function()
 			if not self.StoppedChannel then
 				self:StopChannel("ChannelRanOut")
@@ -114,6 +122,7 @@ end
 
 function AbilityInstance:StopChannel(reason: string)
 	self.StoppedChannel = true
+	BattleGuiController:CancelChannelBar()
 	if self.ChannelAnim then
 		self.ChannelAnim:Stop()
 	end
