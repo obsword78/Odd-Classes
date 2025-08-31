@@ -16,6 +16,8 @@ export type ServerAbilityDefinition = typeof(setmetatable(
 		-- CooldownIgnoresCDR: boolean?,
 		OnCastStart: ((caster: Player) -> any?)?,
 
+		OnChargeStart: ((caster: Player, state: any) -> nil)?,
+
 		Execute: ((caster: any, ctx: any) -> any?)?,
 
 		ChannelTickRate: number?,
@@ -36,17 +38,25 @@ local ServerAbilityDefinitions: { [string]: ServerAbilityDefinition } = {}
 -------------------------
 ServerAbilityDefinitions.Punch = setmetatable({
 	Name = "Punch",
-	Execute = function(caster, state) end,
+	Execute = function(caster, state)
+		local entityStats = CustomStatsService:GetEntityStats(caster.Character)
+		if entityStats:Get("EmpowerPunch") then
+		else
+		end
+	end,
 }, StaticAbilityDefinitions.MetaTable)
 -------------------------
 ServerAbilityDefinitions.Exertion = setmetatable({
 	Name = "Exertion",
+	Execute = function(caster, state)
+		-- Damage receive event
+	end,
 }, StaticAbilityDefinitions.MetaTable)
 -------------------------
 ServerAbilityDefinitions.MovingForce = setmetatable({
 	Name = "MovingForce",
 	ChannelTickRate = 0.02,
-	OnCastStart = function(caster: Player)
+	OnChargeStart = function(caster: Player)
 		local entityStats = CustomStatsService:GetEntityStats(caster.Character)
 		entityStats:Increment("Stamina", -10)
 	end,
@@ -116,10 +126,19 @@ ServerAbilityDefinitions.MovingForce = setmetatable({
 -------------------------
 ServerAbilityDefinitions.HeavyImpact = setmetatable({
 	Name = "HeavyImpact",
+	Execute = function(caster, state)
+		local entityStats = CustomStatsService:GetEntityStats(caster.Character)
+		-- Punch cooldown reset
+		entityStats:SetCustomStat("EmpowerPunch", true)
+	end,
 }, StaticAbilityDefinitions.MetaTable)
 -------------------------
 ServerAbilityDefinitions.FinalAdrenaline = setmetatable({
 	Name = "FinalAdrenaline",
+	Execute = function(caster, state)
+		local entityStats = CustomStatsService:GetEntityStats(caster.Character)
+		entityStats:SetCustomStat("FinalAdrenaline", true)
+	end,
 }, StaticAbilityDefinitions.MetaTable)
 
 return ServerAbilityDefinitions
