@@ -9,32 +9,33 @@ knit.OnStart():andThen(function()
 	PoolService = knit.GetService("PoolService")
 end)
 
-export type ServerAbilityDefinition = typeof(setmetatable(
-	{} :: {
-		Name: string,
-		ResourceCost: number? | ((caster: any) -> number)?,
-		-- CooldownIgnoresCDR: boolean?,
-		OnCastStart: ((caster: Player) -> any?)?,
+export type ServerAbilityDefinition = {
+	Name: string,
+	ResourceCost: number? | ((caster: any) -> number)?,
+	-- CooldownIgnoresCDR: boolean?,
+	OnCastStart: ((caster: Player) -> any?)?,
 
-		OnChargeStart: ((caster: Player, state: any) -> nil)?,
+	OnChargeStart: ((caster: Player, state: any) -> nil)?,
 
-		Execute: ((caster: any, ctx: any) -> any?)?,
+	Execute: ((caster: any, ctx: any) -> any?)?,
 
-		ChannelTickRate: number?,
-		OnChannelTick: ((caster: any, castData: any) -> ())?,
-		OnInterrupted: ((caster: any, state: any, reason: string) -> ())?,
-	},
-	StaticAbilityDefinitions.MetaTable
-))
+	ChannelTickRate: number?,
+	OnChannelTick: ((caster: any, castData: any) -> ())?,
+	OnInterrupted: ((caster: any, state: any, reason: string) -> ())?,
+}
 
-export type ServerPassiveDefinition = typeof(setmetatable(
-	{} :: {
-		Name: string,
-	},
+export type ServerPassiveDefinition = {
+	Name: string,
+	OnApply: ((caster: Player) -> ())?,
+	OnTick: ((caster: Player, dt: number) -> ())?,
+}
+
+export type ServerDefinition = typeof(setmetatable(
+	{} :: ServerAbilityDefinition | ServerPassiveDefinition,
 	StaticAbilityDefinitions.MetaTable
 ))
 --=================================================
-local ServerAbilityDefinitions: { [string]: ServerAbilityDefinition } = {}
+local ServerAbilityDefinitions: { [string]: ServerDefinition } = {}
 -------------------------
 ServerAbilityDefinitions.Punch = setmetatable({
 	Name = "Punch",

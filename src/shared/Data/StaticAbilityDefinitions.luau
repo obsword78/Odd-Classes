@@ -6,7 +6,9 @@ export type SharedAbilityDefinition = {
 	ChannelTime: number?,
 }
 
-export type SharedPassiveDefinition = {}
+export type SharedPassiveDefinition = {
+	TickRate: number?,
+}
 
 type LocalMetaTable = {
 	__index: (definition: any, index: string) -> any,
