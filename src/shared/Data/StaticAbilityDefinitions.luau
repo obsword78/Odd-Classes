@@ -23,10 +23,12 @@ StaticAbilityDefinitions.MetaTable = {
 -------------------------
 StaticAbilityDefinitions.Punch = {
 	Cooldown = 1,
+	CastTime = 0.2,
 }
 -------------------------
 StaticAbilityDefinitions.Exertion = {
 	Cooldown = 15,
+	CastTime = 1,
 }
 -------------------------
 StaticAbilityDefinitions.MovingForce = {
@@ -42,6 +44,7 @@ StaticAbilityDefinitions.HeavyImpact = {
 -------------------------
 StaticAbilityDefinitions.FinalAdrenaline = {
 	Cooldown = 180,
+	CastTime = 2,
 }
 
 return StaticAbilityDefinitions
