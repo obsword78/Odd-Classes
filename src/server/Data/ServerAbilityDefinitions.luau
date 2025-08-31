@@ -1,6 +1,14 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local knit = require(ReplicatedStorage.Packages.knit)
 local StaticAbilityDefinitions = require(ReplicatedStorage.Shared.Data.StaticAbilityDefinitions)
+local CustomStatsService
+local PoolService
+
+knit.OnStart():andThen(function()
+	CustomStatsService = knit.GetService("CustomStatsService")
+	PoolService = knit.GetService("PoolService")
+end)
+
 export type ServerAbilityDefinition = typeof(setmetatable(
 	{} :: {
 		Name: string,
@@ -12,18 +20,29 @@ export type ServerAbilityDefinition = typeof(setmetatable(
 
 		ChannelTickRate: number?,
 		OnChannelTick: ((caster: any, castData: any) -> ())?,
-		OnInterrupted: ((caster: any, reason: string) -> ())?,
+		OnInterrupted: ((caster: any, state: any, reason: string) -> ())?,
+	},
+	StaticAbilityDefinitions.MetaTable
+))
+
+export type ServerPassiveDefinition = typeof(setmetatable(
+	{} :: {
+		Name: string,
 	},
 	StaticAbilityDefinitions.MetaTable
 ))
 --=================================================
 local ServerAbilityDefinitions: { [string]: ServerAbilityDefinition } = {}
-
-local CustomStatsService
-knit.OnStart():andThen(function()
-	CustomStatsService = knit.GetService("CustomStatsService")
-end)
-
+-------------------------
+ServerAbilityDefinitions.Punch = setmetatable({
+	Name = "Punch",
+	Execute = function(caster, state) end,
+}, StaticAbilityDefinitions.MetaTable)
+-------------------------
+ServerAbilityDefinitions.Exertion = setmetatable({
+	Name = "Exertion",
+}, StaticAbilityDefinitions.MetaTable)
+-------------------------
 ServerAbilityDefinitions.MovingForce = setmetatable({
 	Name = "MovingForce",
 	ChannelTickRate = 0.02,
@@ -38,6 +57,7 @@ ServerAbilityDefinitions.MovingForce = setmetatable({
 			local overlapParams = OverlapParams.new()
 			overlapParams.FilterDescendantsInstances = { character }
 			state.OverlapParams = overlapParams
+			state.Dragged = {}
 		else
 			local charBBCFrame, charBBSize = character:GetBoundingBox()
 			local result = workspace:Blockcast(charBBCFrame, charBBSize, charBBCFrame.LookVector * 4)
@@ -53,42 +73,53 @@ ServerAbilityDefinitions.MovingForce = setmetatable({
 		return state.TimeCharged == 0.4
 	end,
 	OnChannelTick = function(abilityInstance, _dT)
-		local character = abilityInstance.Caster.Character
+		local character: Model = abilityInstance.Caster.Character
 
 		local charBBCFrame, charBBSize = character:GetBoundingBox()
-		local serverLeeway = 5
-		-- local hit = {}
+		local serverLeeway = 3.8
+		local hitModels = {}
+		local partsInBox = workspace:GetPartBoundsInBox(
+			charBBCFrame * CFrame.new(0, 0, -serverLeeway / 2),
+			charBBSize + Vector3.new(0, 0, serverLeeway),
+			abilityInstance.State.OverlapParams
+		)
 
-		-- debugPart.CFrame = charBBCFrame
-		-- debugPart.Size = charBBSize + Vector3.new(0, 0, serverLeeway)
+		for _, object in pairs(partsInBox) do
+			if table.find(hitModels, object.Parent) then
+				continue
+			end
+			abilityInstance.State.OverlapParams:AddToFilter(object.Parent)
+			table.insert(hitModels, object.Parent)
 
-		if
-			#workspace:GetPartBoundsInBox(
-				charBBCFrame * CFrame.new(0, 0, -serverLeeway / 2),
-				charBBSize + Vector3.new(0, 0, serverLeeway),
-				abilityInstance.State.OverlapParams
-			) > 0
-		then
-			abilityInstance:StopChannel("Collision")
+			if object.Parent:FindFirstChild("Humanoid") and not object.Parent.PrimaryPart.Anchored then
+				object.Parent:PivotTo(character:GetPivot() * CFrame.new(0, 0, -3))
+
+				local weld = PoolService:GetItemOf("WeldConstraint")
+				weld.Part0 = character.PrimaryPart
+				weld.Part1 = object.Parent.PrimaryPart
+				weld.Name = `{object.Parent.Name}%physicaldrag%{character.Name}`
+				weld.Parent = character.PrimaryPart
+				table.insert(abilityInstance.State.Dragged, weld)
+			else
+				abilityInstance:StopChannel("Collision")
+				break
+			end
 		end
-
-		-- for _, object in
-		-- 	pairs(workspace:GetPartBoundsInBox(charBBCFrame, charBBSize, abilityInstance.State.OverlapParams))
-		-- do
-		-- 	if not object.Parent:IsA("Model") or table.find(hit, object.Parent) then
-		-- 		continue
-		-- 	end
-		-- 	table.insert(hit, object.Parent)
-		-- end
-
-		-- if #hit > 0 then
-		-- 	-- for _, _objectHit in pairs(hit) do
-		-- 	-- end
-		-- end
 	end,
-	OnInterrupted = function(_caster: Player, _reason: string)
-		-- print(caster, reason)
+	OnInterrupted = function(_caster: Player, state, _reason: string)
+		for _, weld in pairs(state.Dragged) do
+			weld:release()
+		end
+		state.Dead = true
 	end,
+}, StaticAbilityDefinitions.MetaTable)
+-------------------------
+ServerAbilityDefinitions.HeavyImpact = setmetatable({
+	Name = "HeavyImpact",
+}, StaticAbilityDefinitions.MetaTable)
+-------------------------
+ServerAbilityDefinitions.FinalAdrenaline = setmetatable({
+	Name = "FinalAdrenaline",
 }, StaticAbilityDefinitions.MetaTable)
 
 return ServerAbilityDefinitions

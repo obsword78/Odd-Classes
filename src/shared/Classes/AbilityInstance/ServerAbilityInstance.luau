@@ -1,8 +1,22 @@
 local RunService = game:GetService("RunService")
+--------------------------------------------------------
+type AbilityInstanceState = {
+	TimeCharged: number?,
+	ChannelStopped: boolean?,
+	Dead: boolean?,
+}
+type ServerAbilityInstance = {
+	Def: any,
+	State: AbilityInstanceState,
+	StartTime: number,
 
+	StopChannel: (self: ServerAbilityInstance, reason: string) -> nil,
+	IsDead: (self: ServerAbilityInstance) -> boolean?,
+}
+--------------------------------------------------------
 local ServerAbilityInstance = {}
 ServerAbilityInstance.__index = ServerAbilityInstance
-
+--------------------------------------------------------
 local function _startCast(self)
 	if self.Def.OnCastStart then
 		self.Def.OnCastStart(self.Caster)
@@ -10,6 +24,7 @@ local function _startCast(self)
 	task.wait(self.Def.CastTime)
 	self:_Flow(false)
 end
+
 local function _startCharge(self)
 	self.ChargeReleased = false
 	while not self.ChargeReleased and (os.clock() - self.StartTime) < (self.Def.MaxChargeTime or 3) do
@@ -26,7 +41,7 @@ local function _flow(self)
 		self:_StartChannel()
 	end
 end
-
+--------------------------------------------------------
 function ServerAbilityInstance.new(abilityDef, caster)
 	local self = setmetatable({}, ServerAbilityInstance)
 	self.Def = abilityDef
@@ -91,19 +106,19 @@ function ServerAbilityInstance:_StartChannel()
 end
 
 function ServerAbilityInstance:StopChannel(reason: string)
-	self.StoppedChannel = true
+	self.State.ChannelStopped = true
 	if self._ChannelTickConn then
 		self._ChannelTickConn:Disconnect()
 	end
 	if self.Def.OnInterrupted then
-		self.Def.OnInterrupted(self.Caster, reason)
+		self.Def.OnInterrupted(self.Caster, self.State, reason)
 	end
 end
 
 function ServerAbilityInstance:FullInterrupt(reason: string) end
 
 function ServerAbilityInstance:IsDead()
-	return (self.Def.ChannelTime and self.StoppedChannel) or self.State.Dead
+	return (self.Def.ChannelTime and self.State.ChannelStopped) or self.State.Dead
 end
 
 return ServerAbilityInstance

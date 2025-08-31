@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local ServerScriptService = game:GetService("ServerScriptService")
+local ClassCustomStats = require(ServerScriptService.Server.Data.ClassCustomStats)
 local ProfileStore = require(ServerScriptService.ServerPackages.ProfileStore)
 local knit = require(ReplicatedStorage.Packages.knit)
 local trove = require(ReplicatedStorage.Packages.trove)
@@ -19,6 +20,11 @@ local PROFILE_TEMPLATE = {
 }
 local PlayerStore = ProfileStore.New("PlayerProfiles", PROFILE_TEMPLATE)
 local PlayerStoreProfiles: { [Player]: typeof(PlayerStore:StartSessionAsync()) } = {}
+---------------------------------------------------------------
+local CustomStatsService
+knit.OnStart():andThen(function()
+	CustomStatsService = knit.GetService("CustomStatsService")
+end)
 ---------------------------------------------------------------
 function PlayerService:KnitInit()
 	print("[PlayerService] Initialized")
@@ -69,6 +75,17 @@ end
 
 function PlayerService.Client:SelectClass(player: Player, className: string)
 	playerProfiles[player]:SetData("SelectedClass", className)
+
+	if not ClassCustomStats[className] then
+		return
+	end
+
+	local entityStats = CustomStatsService:GetEntityStats(player.Character)
+	for statName, baseValue in pairs(ClassCustomStats[className]) do
+		entityStats:SetCustomStat(statName, baseValue)
+	end
+
+	entityStats:ImprintHumanoid()
 end
 
 return PlayerService

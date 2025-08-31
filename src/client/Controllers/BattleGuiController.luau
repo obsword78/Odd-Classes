@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local knit = require(ReplicatedStorage.Packages.knit)
+local AbilityGuiSets = require(ReplicatedStorage.Shared.Data.AbilityGuiSets)
 
 local BattleGui = game.Players.LocalPlayer.PlayerGui:WaitForChild("BattleGUI")
 local AbilitySlotsFrame = BattleGui.AbilitySlots
@@ -8,11 +9,11 @@ local Quickbar = BattleGui.QuickBar
 local Quickbar_bar = Quickbar:FindFirstChild("Bar")
 
 local currentQB_tween: TweenBase
-
+--------------------------------------------------------------
 local BattleGuiController = knit.CreateController({
 	Name = "BattleGuiController",
 })
-
+--------------------------------------------------------------
 local function hideQuickBar()
 	Quickbar.Visible = false
 
@@ -49,6 +50,19 @@ local function cdFlashAnim(abilitySlotFrame)
 	tweenBase.Completed:Once(function()
 		flashFrame.Visible = false
 	end)
+end
+--------------------------------------------------------------
+function BattleGuiController:LoadAbilitySlots(label: string)
+	for _, abilitySlot: ImageLabel in pairs(AbilitySlotsFrame:GetChildren()) do
+		if not abilitySlot:IsA("ImageLabel") then
+			continue
+		end
+		if AbilityGuiSets[label] and AbilityGuiSets[label][abilitySlot.Name] then
+			abilitySlot.Image = AbilityGuiSets[label][abilitySlot.Name].ImageId
+		else
+			abilitySlot.Image = ""
+		end
+	end
 end
 
 function BattleGuiController:RunCastBar(castTime: number)

@@ -14,4 +14,6 @@ function DamageService:KnitStart()
 	print("[DamageService] Started")
 end
 
+function DamageService:Damage() end
+
 return DamageService

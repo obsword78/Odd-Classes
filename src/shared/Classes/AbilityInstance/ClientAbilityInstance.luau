@@ -1,42 +1,54 @@
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ClientAbilityDefinitions = require(ReplicatedStorage.Shared.Data.ClientAbilityDefinitions)
 local RunService = game:GetService("RunService")
 local knit = require(ReplicatedStorage.Packages.knit)
 local BattleGuiController
-
-knit.OnStart():andThen(function()
-	BattleGuiController = knit.GetController("BattleGuiController")
-end)
-
+local AnimationController
+--------------------------------------------------------------------------------
 type AbilityInstanceState = {
 	TimeCharged: number?,
+	ChannelStopped: boolean?,
 	Dead: boolean?,
 }
-
-type AbilityInstance = {
+type ClientAbilityInstance = {
 	Def: ClientAbilityDefinitions.ClientAbilityDefinition,
 	State: AbilityInstanceState,
 	StartTime: number,
-	StoppedChannel: boolean,
-	Expired: boolean,
 
-	StopChannel: (self: AbilityInstance, reason: string) -> nil,
+	StopChannel: (self: ClientAbilityInstance, reason: string) -> nil,
+	IsDead: (self: ClientAbilityInstance) -> boolean?,
 }
-
+--------------------------------------------------------------------------------
+knit.OnStart()
+	:andThen(function()
+		BattleGuiController = knit.GetController("BattleGuiController")
+		AnimationController = knit.GetController("AnimationController")
+	end)
+	:catch(warn)
+--------------------------------------------------------------------------------
 local AbilityInstance = {}
 AbilityInstance.__index = AbilityInstance
-
+---------------------------------------------------
 local function _startCast(self)
 	BattleGuiController:RunCastBar(self.Def.CastTime)
+	if self.Def.CastAnimation then
+		self.CastAnim = AnimationController:LoadAnimation(self.Def.CastAnimation)
+		self.CastAnim:Play()
+	end
 	task.wait(self.Def.CastTime)
+	self.CastAnim:Stop()
 	self:_Flow(false)
 end
 local function _startCharge(self)
 	self.ChargeReleased = false
+	if self.Def.ChargeAnimation then
+		self.ChargeAnim = AnimationController:LoadAnimation(self.Def.ChargeAnimation)
+		self.ChargeAnim:Play()
+	end
 	while not self.ChargeReleased and (os.clock() - self.StartTime) < (self.Def.MaxChargeTime or 3) do
 		task.wait()
 	end
+	self.ChargeAnim:Stop()
 	self.State.TimeCharged = math.min(os.clock() - self.StartTime, self.Def.MaxChargeTime or 3)
 	self:_Flow(false)
 end
@@ -48,15 +60,14 @@ local function _flow(self)
 		self:_StartChannel()
 	end
 end
-
-function AbilityInstance.new(abilityDef): AbilityInstance
+---------------------------------------------------
+function AbilityInstance.new(abilityDef): ClientAbilityInstance
 	local self = setmetatable({}, AbilityInstance)
 	self.Def = abilityDef
 	self.State = {}
 
 	self.StartTime = os.clock()
 	self.StoppedChannel = false
-	self.Expired = false
 
 	abilityDef = nil -- cleanup variable
 
@@ -93,10 +104,8 @@ end
 
 function AbilityInstance:_StartChannel()
 	if not self.Def.ChannelConditions or self.Def.ChannelConditions(self.State) then
-		if self.Def.ChannelAnimationId then
-			local animation: Animation = Instance.new("Animation")
-			animation.AnimationId = self.Def.ChannelAnimationId
-			self.ChannelAnim = Players.LocalPlayer.Character.Humanoid.Animator:LoadAnimation(animation)
+		if self.Def.ChannelAnimation then
+			self.ChannelAnim = AnimationController:LoadAnimation(self.Def.ChannelAnimation)
 			self.ChannelAnim:Play()
 		end
 
@@ -121,7 +130,7 @@ function AbilityInstance:_StartChannel()
 end
 
 function AbilityInstance:StopChannel(reason: string)
-	self.StoppedChannel = true
+	self.State.ChannelStopped = true
 	BattleGuiController:CancelChannelBar()
 	if self.ChannelAnim then
 		self.ChannelAnim:Stop()
@@ -135,7 +144,7 @@ function AbilityInstance:StopChannel(reason: string)
 end
 
 function AbilityInstance:IsDead()
-	return (self.Def.ChannelTime and self.StoppedChannel) or self.State.Dead
+	return (self.Def.ChannelTime and self.State.ChannelStopped) or self.State.Dead
 end
 
 return AbilityInstance

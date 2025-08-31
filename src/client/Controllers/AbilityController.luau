@@ -7,14 +7,14 @@ local BattleGuiController
 knit.OnStart():andThen(function()
 	BattleGuiController = knit.GetController("BattleGuiController")
 end)
-
+--------------------------------------------------------------------------------
 local AbilityController = knit.CreateController({
 	Name = "AbilityController",
 })
-
+--------------------------------------------------------------------------------
 AbilityController.Cooldowns = {} -- [abilityName] = time
 AbilityController.ActiveInstances = {} -- {instances...}
-
+--------------------------------------------------------------------------------
 function AbilityController:KnitInit()
 	task.defer(function()
 		while task.wait(10) do
