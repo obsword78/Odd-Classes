@@ -71,7 +71,7 @@ function SettingsController:KnitInit()
 			categoryButton.Text = `<u>{categoryButton.Name}</u>`
 		end)
 	end
-	--====================== Save Settings to Gui Cache
+	--====================== Save to Gui Cache & Detect Setting Changes
 	for category, categorySettings in DefaultSettings do
 		local categoryFolder = Instance.new("Folder")
 		categoryFolder.Name = category
@@ -83,6 +83,13 @@ function SettingsController:KnitInit()
 			if setting.Value then
 				SettingsController._SettingValues[settingLabel] = setting.Value
 			end
+
+			setting.Changed:Connect(function()
+				SettingsController._SettingValues[settingLabel] = setting.Value
+				if settingLabel == "Combat" then
+					SetAbilityBinds()
+				end
+			end)
 		end
 		categoryFolder.Parent = SettingsGuiCache
 	end
