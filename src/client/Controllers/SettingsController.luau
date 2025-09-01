@@ -76,11 +76,12 @@ function SettingsController:KnitInit()
 				SettingsController._SettingValues[settingLabel] = setting.Value
 				setting:SetChanges()
 			end
-
-			setting.Changed:Connect(function()
-				SettingsController._SettingValues[settingLabel] = setting.Value
-				setting:SetChanges()
-			end)
+			if setting.Changed then
+				setting.Changed:Connect(function()
+					SettingsController._SettingValues[settingLabel] = setting.Value
+					setting:SetChanges()
+				end)
+			end
 		end
 		categoryFolder.Parent = SettingsGuiCache
 	end
