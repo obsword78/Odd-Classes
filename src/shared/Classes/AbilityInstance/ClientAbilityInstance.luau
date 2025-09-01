@@ -34,7 +34,9 @@ local function _startCast(self)
 		self.CastAnim:Play()
 	end
 	task.wait(self.Def.CastTime)
-	self.CastAnim:Stop()
+	if self.CastAnim then
+		self.CastAnim:Stop()
+	end
 	self:_Flow(false)
 end
 local function _startCharge(self)
@@ -46,7 +48,9 @@ local function _startCharge(self)
 	while not self.ChargeReleased and (os.clock() - self.StartTime) < (self.Def.MaxChargeTime or 3) do
 		task.wait()
 	end
-	self.ChargeAnim:Stop()
+	if self.ChargeAnim then
+		self.ChargeAnim:Stop()
+	end
 	self.State.TimeCharged = math.min(os.clock() - self.StartTime, self.Def.MaxChargeTime or 3)
 	self:_Flow(false)
 end
