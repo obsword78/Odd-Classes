@@ -12,7 +12,6 @@ local CategoriesFrame
 local ToggleButton
 local SettingsTypesFolder
 local SettingsGuiCache
-local AbilitiesContext
 
 local SelectedCategory = "Video"
 
@@ -38,19 +37,12 @@ local function LoadCategoryPage(category: string)
 	end
 end
 
-local function SetAbilityBinds()
-	for i, mapping in SettingsController._SettingValues.Combat do
-		AbilitiesContext[i].KeyboardBinding.KeyCode = mapping.InputBinding
-	end
-end
-
 function SettingsController:KnitInit()
 	ScreenGui = game.Players.LocalPlayer.PlayerGui:WaitForChild("Settings")
 	SettingsFrame = ScreenGui.SettingsFrame
 	CategoriesFrame = SettingsFrame.Categories
 	ToggleButton = ScreenGui.Toggle
 	SettingsTypesFolder = ReplicatedStorage:WaitForChild("GuiTemplates").SettingTypes
-	AbilitiesContext = ScreenGui.Parent.Abilities
 	SettingsGuiCache = Instance.new("Folder")
 
 	SettingsGuiCache.Name = "SettingsGuiCache"
@@ -82,13 +74,12 @@ function SettingsController:KnitInit()
 			newSettingGui.Parent = categoryFolder
 			if setting.Value then
 				SettingsController._SettingValues[settingLabel] = setting.Value
+				setting:SetChanges()
 			end
 
 			setting.Changed:Connect(function()
 				SettingsController._SettingValues[settingLabel] = setting.Value
-				if settingLabel == "Combat" then
-					SetAbilityBinds()
-				end
+				setting:SetChanges()
 			end)
 		end
 		categoryFolder.Parent = SettingsGuiCache
@@ -96,8 +87,6 @@ function SettingsController:KnitInit()
 	--====================== Load Selected from Cache on startup
 	SettingsGuiCache.Parent = ReplicatedStorage
 	LoadCategoryPage(SelectedCategory)
-	--====================== Set Ability Binds
-	SetAbilityBinds()
 	--====================== Print
 	print("[SettingsController] Initialised")
 end
