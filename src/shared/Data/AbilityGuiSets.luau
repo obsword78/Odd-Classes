@@ -4,16 +4,19 @@ AbilityGuiSets.Physical = {}
 AbilityGuiSets.Physical.Passive = {
 	ImageId = "",
 }
-AbilityGuiSets.Physical.E = {
+AbilityGuiSets.Physical["1"] = {
 	ImageId = "",
 }
-AbilityGuiSets.Physical.R = {
+AbilityGuiSets.Physical["2"] = {
 	ImageId = "",
 }
-AbilityGuiSets.Physical.F = {
+AbilityGuiSets.Physical["3"] = {
 	ImageId = "rbxassetid://97587721490539",
 }
-AbilityGuiSets.Physical["1"] = {
+AbilityGuiSets.Physical["4"] = {
+	ImageId = "",
+}
+AbilityGuiSets.Physical["5"] = {
 	ImageId = "",
 }
 

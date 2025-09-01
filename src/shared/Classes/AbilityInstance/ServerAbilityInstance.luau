@@ -98,7 +98,7 @@ function ServerAbilityInstance:_StartChannel()
 		end)
 
 		task.delay(self.Def.ChannelTime, function()
-			if not self.StoppedChannel then
+			if not self.State.ChannelStopped then
 				self:StopChannel("ChannelRanOut")
 			end
 		end)

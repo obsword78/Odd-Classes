@@ -1,8 +1,8 @@
 local ClassInputs = {}
 
 ClassInputs.Physical = {
-	Punch = Enum.UserInputType.MouseButton1,
-	MovingForce = Enum.KeyCode.F,
+	Punch = "1",
+	MovingForce = "4",
 }
 
 return ClassInputs

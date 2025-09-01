@@ -7,6 +7,7 @@ Animations.Abilities.MovingForceCharge = "rbxassetid://119501115508177"
 Animations.Abilities.MovingForceChannel = "rbxassetid://6881035317"
 Animations.Abilities.MovingForceCollision = "rbxassetid://90017705370595"
 Animations.Abilities.MovingForceNoCollision = "rbxassetid://89680333417950"
+Animations.Abilities.MovingForceBash = "rbxassetid://132707928304142"
 ------------------------------------------------------------------------------
 task.spawn(function()
 	local arrayForm = {}

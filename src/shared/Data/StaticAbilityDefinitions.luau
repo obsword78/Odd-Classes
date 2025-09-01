@@ -6,7 +6,9 @@ export type SharedAbilityDefinition = {
 	ChannelTime: number?,
 }
 
-export type SharedPassiveDefinition = {}
+export type SharedPassiveDefinition = {
+	TickRate: number?,
+}
 
 type LocalMetaTable = {
 	__index: (definition: any, index: string) -> any,
@@ -23,10 +25,12 @@ StaticAbilityDefinitions.MetaTable = {
 -------------------------
 StaticAbilityDefinitions.Punch = {
 	Cooldown = 1,
+	CastTime = 0.2,
 }
 -------------------------
 StaticAbilityDefinitions.Exertion = {
 	Cooldown = 15,
+	CastTime = 1,
 }
 -------------------------
 StaticAbilityDefinitions.MovingForce = {
@@ -42,6 +46,7 @@ StaticAbilityDefinitions.HeavyImpact = {
 -------------------------
 StaticAbilityDefinitions.FinalAdrenaline = {
 	Cooldown = 180,
+	CastTime = 2,
 }
 
 return StaticAbilityDefinitions

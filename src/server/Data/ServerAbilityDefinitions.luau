@@ -9,44 +9,55 @@ knit.OnStart():andThen(function()
 	PoolService = knit.GetService("PoolService")
 end)
 
-export type ServerAbilityDefinition = typeof(setmetatable(
-	{} :: {
-		Name: string,
-		ResourceCost: number? | ((caster: any) -> number)?,
-		-- CooldownIgnoresCDR: boolean?,
-		OnCastStart: ((caster: Player) -> any?)?,
+export type ServerAbilityDefinition = {
+	Name: string,
+	ResourceCost: number? | ((caster: any) -> number)?,
+	-- CooldownIgnoresCDR: boolean?,
+	OnCastStart: ((caster: Player) -> any?)?,
 
-		Execute: ((caster: any, ctx: any) -> any?)?,
+	OnChargeStart: ((caster: Player, state: any) -> nil)?,
 
-		ChannelTickRate: number?,
-		OnChannelTick: ((caster: any, castData: any) -> ())?,
-		OnInterrupted: ((caster: any, state: any, reason: string) -> ())?,
-	},
-	StaticAbilityDefinitions.MetaTable
-))
+	Execute: ((caster: any, ctx: any) -> any?)?,
 
-export type ServerPassiveDefinition = typeof(setmetatable(
-	{} :: {
-		Name: string,
-	},
+	ChannelTickRate: number?,
+	OnChannelTick: ((caster: any, castData: any) -> ())?,
+	OnInterrupted: ((caster: any, state: any, reason: string) -> ())?,
+}
+
+export type ServerPassiveDefinition = {
+	Name: string,
+	OnApply: ((caster: Player) -> ())?,
+	OnTick: ((caster: Player, dt: number) -> ())?,
+}
+
+export type ServerDefinition = typeof(setmetatable(
+	{} :: ServerAbilityDefinition | ServerPassiveDefinition,
 	StaticAbilityDefinitions.MetaTable
 ))
 --=================================================
-local ServerAbilityDefinitions: { [string]: ServerAbilityDefinition } = {}
+local ServerAbilityDefinitions: { [string]: ServerDefinition } = {}
 -------------------------
 ServerAbilityDefinitions.Punch = setmetatable({
 	Name = "Punch",
-	Execute = function(caster, state) end,
+	Execute = function(caster, state)
+		local entityStats = CustomStatsService:GetEntityStats(caster.Character)
+		if entityStats:Get("EmpowerPunch") then
+		else
+		end
+	end,
 }, StaticAbilityDefinitions.MetaTable)
 -------------------------
 ServerAbilityDefinitions.Exertion = setmetatable({
 	Name = "Exertion",
+	Execute = function(caster, state)
+		-- Damage receive event
+	end,
 }, StaticAbilityDefinitions.MetaTable)
 -------------------------
 ServerAbilityDefinitions.MovingForce = setmetatable({
 	Name = "MovingForce",
 	ChannelTickRate = 0.02,
-	OnCastStart = function(caster: Player)
+	OnChargeStart = function(caster: Player)
 		local entityStats = CustomStatsService:GetEntityStats(caster.Character)
 		entityStats:Increment("Stamina", -10)
 	end,
@@ -116,10 +127,19 @@ ServerAbilityDefinitions.MovingForce = setmetatable({
 -------------------------
 ServerAbilityDefinitions.HeavyImpact = setmetatable({
 	Name = "HeavyImpact",
+	Execute = function(caster, state)
+		local entityStats = CustomStatsService:GetEntityStats(caster.Character)
+		-- Punch cooldown reset
+		entityStats:SetCustomStat("EmpowerPunch", true)
+	end,
 }, StaticAbilityDefinitions.MetaTable)
 -------------------------
 ServerAbilityDefinitions.FinalAdrenaline = setmetatable({
 	Name = "FinalAdrenaline",
+	Execute = function(caster, state)
+		local entityStats = CustomStatsService:GetEntityStats(caster.Character)
+		entityStats:SetCustomStat("FinalAdrenaline", true)
+	end,
 }, StaticAbilityDefinitions.MetaTable)
 
 return ServerAbilityDefinitions

@@ -3,11 +3,11 @@ local knit = require(ReplicatedStorage.Packages.knit)
 local Animations = require(script.Parent.Animations)
 local StaticAbilityDefinitions = require(script.Parent.StaticAbilityDefinitions)
 local AnimationController
-
+--------------------------------------------------
 knit.OnStart():andThen(function()
 	AnimationController = knit.GetController("AnimationController")
 end)
-
+--------------------------------------------------
 export type ClientAbilityDefinition = typeof(setmetatable(
 	{} :: {
 		Name: string,
@@ -15,6 +15,7 @@ export type ClientAbilityDefinition = typeof(setmetatable(
 
 		CastAnimation: Animation?,
 		ChargeAnimation: Animation?,
+		ExecuteAnimation: Animation?,
 		ChannelAnimation: Animation?,
 
 		Execute: ((state: { [string]: any }?) -> nil)?,
@@ -33,7 +34,7 @@ export type ClientPassiveDefinition = typeof(setmetatable(
 	},
 	StaticAbilityDefinitions.MetaTable
 ))
---==========================================================
+--------------------------------------------------
 local ClientAbilityDefinitions: { [string]: ClientAbilityDefinition } = {}
 -------------------------
 local Player = game:GetService("Players").LocalPlayer
@@ -58,6 +59,7 @@ ClientAbilityDefinitions.MovingForce = setmetatable({
 			local result = workspace:Blockcast(charBBCFrame, charBBSize, charBBCFrame.LookVector * 2.5)
 			local gap = result and result.Distance or 2.5
 
+			AnimationController:LoadAnimation(Animations.Abilities.MovingForceBash):Play()
 			character:PivotTo(character:GetPivot() * CFrame.new(0, 0, -gap))
 			state.Dead = true
 		else

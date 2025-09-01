@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local knit = require(ReplicatedStorage.Packages.knit)
 local AbilityInstance = require(ReplicatedStorage.Shared.Classes.AbilityInstance)
+local ClassInputs = require(ReplicatedStorage.Shared.Data.ClassInputs)
 local ClientAbilityDefinitions = require(ReplicatedStorage.Shared.Data.ClientAbilityDefinitions)
 local BattleGuiController
 
@@ -14,6 +15,14 @@ local AbilityController = knit.CreateController({
 --------------------------------------------------------------------------------
 AbilityController.Cooldowns = {} -- [abilityName] = time
 AbilityController.ActiveInstances = {} -- {instances...}
+--------------------------------------------------------------------------------
+local function checkAbilityValid(abilityName: string)
+	local abilityDef = ClientAbilityDefinitions[abilityName]
+	if not abilityDef then
+		warn(`[AbilityController] {abilityName} is not a valid Ability Name`)
+	end
+	return abilityDef
+end
 --------------------------------------------------------------------------------
 function AbilityController:KnitInit()
 	task.defer(function()
@@ -35,7 +44,7 @@ function AbilityController:KnitInit()
 end
 
 function AbilityController:Cast(abilityName: string)
-	local abilityDef = ClientAbilityDefinitions[abilityName]
+	local abilityDef = checkAbilityValid(abilityName)
 	if not abilityDef then
 		return
 	end
@@ -58,7 +67,7 @@ function AbilityController:Cast(abilityName: string)
 end
 
 function AbilityController:Release(abilityName: string)
-	local abilityDef = ClientAbilityDefinitions[abilityName]
+	local abilityDef = checkAbilityValid(abilityName)
 	if not abilityDef then
 		return
 	end
@@ -72,6 +81,24 @@ function AbilityController:Release(abilityName: string)
 		end
 		break
 	end
+end
+
+function AbilityController:ReduceCD(abilityName: string, seconds: number)
+	local abilityDef = checkAbilityValid(abilityName)
+	if not abilityDef then
+		return
+	end
+	self.Cooldowns[abilityName] -= seconds
+	BattleGuiController:ReduceCD(ClassInputs[abilityName], seconds)
+end
+
+function AbilityController:CancelCD(abilityName: string)
+	local abilityDef = checkAbilityValid(abilityName)
+	if not abilityDef then
+		return
+	end
+	self.Cooldowns[abilityName] = -1
+	BattleGuiController:CancelCD(ClassInputs[abilityName])
 end
 
 return AbilityController

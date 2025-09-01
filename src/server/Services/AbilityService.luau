@@ -11,7 +11,15 @@ local AbilityService = knit.CreateService({
 
 AbilityService.Cooldowns = {} -- [player][abilityName] = time
 AbilityService.ActiveInstances = {} -- [player] = {instances...}
-
+--------------------------------------------------------------------------------
+local function checkAbilityValid(abilityName: string)
+	local abilityDef = AbilityDefinitions[abilityName]
+	if not abilityDef then
+		warn(`[AbilityService] {abilityName} is not a valid Ability Name`)
+	end
+	return abilityDef
+end
+--------------------------------------------------------------------------------
 function AbilityService:KnitInit()
 	task.defer(function()
 		while task.wait(10) do
@@ -36,7 +44,7 @@ end
 -- Cast ability
 function AbilityService.Client:Cast(player, abilityName)
 	local server = self.Server
-	local abilityDef = AbilityDefinitions[abilityName]
+	local abilityDef = checkAbilityValid(abilityName)
 	if not abilityDef then
 		return
 	end
@@ -63,7 +71,7 @@ function AbilityService.Client:Cast(player, abilityName)
 end
 
 function AbilityService.Client:Release(player, abilityName)
-	local abilityDef = AbilityDefinitions[abilityName]
+	local abilityDef = checkAbilityValid(abilityName)
 	if not abilityDef then
 		return
 	end
@@ -79,19 +87,20 @@ function AbilityService.Client:Release(player, abilityName)
 	end
 end
 
--- Try recast
-function AbilityService:TryRecast(player, abilityName)
-	local instances = self.ActiveInstances[player]
-	if not instances then
+function AbilityService:ReduceCD(player: Player, abilityName: string, seconds: number)
+	local abilityDef = checkAbilityValid(abilityName)
+	if not abilityDef then
 		return
 	end
-	for _, inst in ipairs(instances) do
-		if inst.Ability.Name == abilityName and not inst.Expired then
-			if inst:TryRecast() then
-				return inst
-			end
-		end
+	self.Cooldowns[player][abilityName] -= seconds
+end
+
+function AbilityService:CancelCD(player: Player, abilityName: string)
+	local abilityDef = checkAbilityValid(abilityName)
+	if not abilityDef then
+		return
 	end
+	self.Cooldowns[player][abilityName] = -1
 end
 
 return AbilityService
