@@ -69,7 +69,11 @@ function SettingsController:KnitInit()
 		categoryFolder.Name = category
 		for settingLabel, setting in categorySettings do
 			local newSettingGui = SettingsTypesFolder[setting.SettingType]:Clone()
-			newSettingGui.SettingLabel.Text = settingLabel
+			if newSettingGui:IsA("Frame") then
+				newSettingGui.SettingLabel.Text = settingLabel
+			elseif newSettingGui:IsA("TextButton") then
+				newSettingGui.Text = settingLabel
+			end
 			setting:MapTo(newSettingGui)
 			newSettingGui.Parent = categoryFolder
 			if setting.Value then
