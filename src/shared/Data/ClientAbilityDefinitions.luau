@@ -11,7 +11,6 @@ end)
 export type ClientAbilityDefinition = typeof(setmetatable(
 	{} :: {
 		Name: string,
-		AbilitySlot: string,
 
 		CastAnimation: Animation?,
 		ChargeAnimation: Animation?,
@@ -40,15 +39,18 @@ local ClientAbilityDefinitions: { [string]: ClientAbilityDefinition } = {}
 local Player = game:GetService("Players").LocalPlayer
 local Camera = workspace.CurrentCamera
 -------------------------
+ClientAbilityDefinitions.Punch = setmetatable({
+	Name = "Punch",
+	Execute = function(_state) end,
+}, StaticAbilityDefinitions.MetaTable)
+-------------------------
 ClientAbilityDefinitions.Exertion = setmetatable({
 	Name = "Exertion",
-	AbilitySlot = "E",
 	Execute = function(_state) end,
 }, StaticAbilityDefinitions.MetaTable)
 -------------------------
 ClientAbilityDefinitions.MovingForce = setmetatable({
 	Name = "MovingForce",
-	AbilitySlot = "F",
 	ChargeAnimation = Animations.Abilities.MovingForceCharge,
 	ChannelAnimation = Animations.Abilities.MovingForceChannel,
 	Execute = function(state)
@@ -118,13 +120,11 @@ ClientAbilityDefinitions.MovingForce = setmetatable({
 -------------------------
 ClientAbilityDefinitions.HeavyImpact = setmetatable({
 	Name = "HeavyImpact",
-	AbilitySlot = "R",
 	Execute = function(_state) end,
 }, StaticAbilityDefinitions.MetaTable)
 -------------------------
 ClientAbilityDefinitions.FinalAdrenaline = setmetatable({
 	Name = "FinalAdrenaline",
-	AbilitySlot = "1",
 	Execute = function(_state) end,
 }, StaticAbilityDefinitions.MetaTable)
 
