@@ -77,7 +77,7 @@ function BattleGuiController:CancelChannelBar()
 	hideQuickBar()
 end
 
-function BattleGuiController:RunCD(abilitySlot: string, seconds: number)
+function BattleGuiController:RunCD(abilitySlot: number, seconds: number)
 	local bar = AbilitySlotsFrame[abilitySlot].CDBar
 	local tweenBase = TweenService:Create(
 		bar,
@@ -93,16 +93,16 @@ function BattleGuiController:RunCD(abilitySlot: string, seconds: number)
 	end)
 end
 
-function BattleGuiController:ReduceCD(abilitySlot: string, seconds: number) end
+function BattleGuiController:ReduceCD(abilitySlot: number, seconds: number) end
 
-function BattleGuiController:SetCD(abilitySlot: string, seconds: number) end
+function BattleGuiController:CancelCD(abilitySlot: number) end
 
-function BattleGuiController:SetCharge(abilitySlot: string, seconds: number) end
+function BattleGuiController:SetCharge(abilitySlot: number, seconds: number) end
 
-function BattleGuiController:SetRecast(abilitySlot: string, timeout: number?) end
+function BattleGuiController:SetRecast(abilitySlot: number, timeout: number?) end
 
-function BattleGuiController:Disable(abilitySlot: string) end
+function BattleGuiController:Disable(abilitySlot: number) end
 
-function BattleGuiController:Enable(abilitySlot: string) end
+function BattleGuiController:Enable(abilitySlot: number) end
 
 return BattleGuiController

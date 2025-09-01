@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local knit = require(ReplicatedStorage.Packages.knit)
 local AbilityInstance = require(ReplicatedStorage.Shared.Classes.AbilityInstance)
+local ClassInputs = require(ReplicatedStorage.Shared.Data.ClassInputs)
 local ClientAbilityDefinitions = require(ReplicatedStorage.Shared.Data.ClientAbilityDefinitions)
 local BattleGuiController
 
@@ -88,6 +89,7 @@ function AbilityController:ReduceCD(abilityName: string, seconds: number)
 		return
 	end
 	self.Cooldowns[abilityName] -= seconds
+	BattleGuiController:ReduceCD(ClassInputs[abilityName], seconds)
 end
 
 function AbilityController:CancelCD(abilityName: string)
@@ -96,6 +98,7 @@ function AbilityController:CancelCD(abilityName: string)
 		return
 	end
 	self.Cooldowns[abilityName] = -1
+	BattleGuiController:CancelCD(ClassInputs[abilityName])
 end
 
 return AbilityController
