@@ -28,7 +28,7 @@ function BoolSwitch.template(startingValue: boolean): BoolSwitchTemplate
 end
 
 function BoolSwitch:MapTo(guiSetting)
-	guiSetting.Left:Connect(function()
+	guiSetting.Left.MouseButton1Click:Connect(function()
 		if self.Value then
 			return
 		end
@@ -36,7 +36,7 @@ function BoolSwitch:MapTo(guiSetting)
 		self.Value = true
 		self.Changed:Fire()
 	end)
-	guiSetting.Right:Connect(function()
+	guiSetting.Right.MouseButton1Click:Connect(function()
 		if not self.Value then
 			return
 		end
