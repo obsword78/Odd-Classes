@@ -4,9 +4,11 @@ local AbilityInstance = require(ReplicatedStorage.Shared.Classes.AbilityInstance
 local ClassInputs = require(ReplicatedStorage.Shared.Data.ClassInputs)
 local ClientAbilityDefinitions = require(ReplicatedStorage.Shared.Data.ClientAbilityDefinitions)
 local BattleGuiController
+local ClassController
 
 knit.OnStart():andThen(function()
 	BattleGuiController = knit.GetController("BattleGuiController")
+	ClassController = knit.GetController("ClassController")
 end)
 --------------------------------------------------------------------------------
 local AbilityController = knit.CreateController({
@@ -60,7 +62,7 @@ function AbilityController:Cast(abilityName: string)
 
 	if abilityDef.Cooldown then
 		AbilityController.Cooldowns[abilityName] = now + abilityDef.Cooldown
-		BattleGuiController:RunCD(abilityDef.AbilitySlot, abilityDef.Cooldown)
+		BattleGuiController:RunCD(ClassInputs[ClassController.Class][abilityName], abilityDef.Cooldown)
 	end
 
 	return instance
@@ -89,7 +91,7 @@ function AbilityController:ReduceCD(abilityName: string, seconds: number)
 		return
 	end
 	self.Cooldowns[abilityName] -= seconds
-	BattleGuiController:ReduceCD(ClassInputs[abilityName], seconds)
+	BattleGuiController:ReduceCD(ClassInputs[ClassController.Class][abilityName], seconds)
 end
 
 function AbilityController:CancelCD(abilityName: string)
@@ -98,7 +100,7 @@ function AbilityController:CancelCD(abilityName: string)
 		return
 	end
 	self.Cooldowns[abilityName] = -1
-	BattleGuiController:CancelCD(ClassInputs[abilityName])
+	BattleGuiController:CancelCD(ClassInputs[ClassController.Class][abilityName])
 end
 
 return AbilityController

@@ -1,51 +1,55 @@
-local ContextActionService = game:GetService("ContextActionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local knit = require(ReplicatedStorage.Packages.knit)
+local ClassInputs = require(ReplicatedStorage.Shared.Data.ClassInputs)
 
 local AbilityService
 local AbilityController
-
-knit.OnStart():andThen(function()
-	AbilityService = knit.GetService("AbilityService")
-	AbilityController = knit.GetController("AbilityController")
-end)
+local ClassController
 --===========================================================================
 local InputController = knit.CreateController({
 	Name = "InputController",
 })
-
-local _connected_abilities = {}
-
-local function CastAbility(actionName, inputState)
-	if inputState == Enum.UserInputState.Begin then
-		AbilityController:Cast(actionName)
-		AbilityService:Cast(actionName)
-	elseif inputState == Enum.UserInputState.End then
-		AbilityController:Release(actionName)
-		AbilityService:Release(actionName)
-	end
+----------------------------------------
+local _inputaction_connections = {}
+local AbilitiesContext
+----------------------------------------
+local function _Cast(abilityName)
+	AbilityController:Cast(abilityName)
+	AbilityService:Cast(abilityName)
 end
-
-function InputController:ConnectAbility(abilityName: string, keycode: Enum.KeyCode)
-	ContextActionService:BindAction(abilityName, CastAbility, false, keycode)
-	table.insert(_connected_abilities, abilityName)
+local function _Release(abilityName)
+	AbilityController:Release(abilityName)
+	AbilityService:Release(abilityName)
 end
+----------------------------------------
+knit.OnStart():andThen(function()
+	ClassController = knit.GetController("ClassController")
+	AbilityService = knit.GetService("AbilityService")
+	AbilityController = knit.GetController("AbilityController")
 
-function InputController:DisconnectAbility(abilityName: string)
-	ContextActionService:UnbindAction(abilityName)
-	table.remove(_connected_abilities, table.find(_connected_abilities, abilityName))
-end
+	AbilitiesContext = game.Players.LocalPlayer.PlayerGui.Abilities
 
-function InputController:SwitchAbilityKeybind(abilityName: string, keycode: Enum.KeyCode)
-	InputController:DisconnectAbility(abilityName)
-	InputController:ConnectAbility(abilityName, keycode)
-end
+	ClassController.ClassSelected:Connect(function(className)
+		for _, connection in _inputaction_connections do
+			connection:Disconnect()
+		end
+		table.clear(_inputaction_connections)
 
-function InputController:DisconnectAllAbilities()
-	for _, abilityName in pairs(_connected_abilities) do
-		ContextActionService:UnbindAction(abilityName)
-	end
-	table.clear(_connected_abilities)
-end
+		for abilityName: string, inputSlot: string in ClassInputs[className] do
+			table.insert(
+				_inputaction_connections,
+				AbilitiesContext[inputSlot].Pressed:Connect(function()
+					_Cast(abilityName)
+				end)
+			)
+			table.insert(
+				_inputaction_connections,
+				AbilitiesContext[inputSlot].Released:Connect(function()
+					_Release(abilityName)
+				end)
+			)
+		end
+	end)
+end)
 
 return InputController

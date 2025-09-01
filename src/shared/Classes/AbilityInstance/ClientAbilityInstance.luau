@@ -19,12 +19,10 @@ type ClientAbilityInstance = {
 	IsDead: (self: ClientAbilityInstance) -> boolean?,
 }
 --------------------------------------------------------------------------------
-knit.OnStart()
-	:andThen(function()
-		BattleGuiController = knit.GetController("BattleGuiController")
-		AnimationController = knit.GetController("AnimationController")
-	end)
-	:catch(warn)
+knit.OnStart():andThen(function()
+	BattleGuiController = knit.GetController("BattleGuiController")
+	AnimationController = knit.GetController("AnimationController")
+end)
 --------------------------------------------------------------------------------
 local AbilityInstance = {}
 AbilityInstance.__index = AbilityInstance
