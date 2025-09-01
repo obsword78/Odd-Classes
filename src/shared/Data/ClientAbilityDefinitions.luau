@@ -5,6 +5,9 @@ local StaticAbilityDefinitions = require(script.Parent.StaticAbilityDefinitions)
 local AnimationController
 --------------------------------------------------
 knit.OnStart():andThen(function()
+	if knit.GetServices then -- Module by the server
+		return
+	end
 	AnimationController = knit.GetController("AnimationController")
 end)
 --------------------------------------------------

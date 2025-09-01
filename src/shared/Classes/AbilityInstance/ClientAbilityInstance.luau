@@ -20,6 +20,9 @@ type ClientAbilityInstance = {
 }
 --------------------------------------------------------------------------------
 knit.OnStart():andThen(function()
+	if not RunService:IsClient() then
+		return
+	end
 	BattleGuiController = knit.GetController("BattleGuiController")
 	AnimationController = knit.GetController("AnimationController")
 end)
