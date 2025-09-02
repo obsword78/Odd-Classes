@@ -48,21 +48,18 @@ function AbilityService.Client:Cast(player, abilityName)
 	if not abilityDef then
 		return
 	end
-
-	-- cooldown check
+	-------------------- Cooldown Check
 	local now = os.clock()
 	server.Cooldowns[player] = server.Cooldowns[player] or {}
 	local cd = server.Cooldowns[player][abilityName]
 	if cd and now < cd then
 		return
 	end
-
-	-- start ability
+	-------------------- Make AbilityInstance
 	local instance = AbilityInstance.new(abilityDef, player)
 	server.ActiveInstances[player] = server.ActiveInstances[player] or {}
 	table.insert(server.ActiveInstances[player] or {}, instance)
-
-	-- set cooldown
+	-------------------- Set Cooldown
 	if abilityDef.Cooldown then
 		server.Cooldowns[player][abilityName] = now + abilityDef.Cooldown
 	end
@@ -84,6 +81,15 @@ function AbilityService.Client:Release(player, abilityName)
 			activeInstance.ChargeReleased = true
 		end
 		break
+	end
+end
+
+function AbilityService:Interrupt(player: Player, reason: string?)
+	if not AbilityService.ActiveInstances[player] then
+		return
+	end
+	for _, activeInstance in AbilityService.ActiveInstances[player] do
+		activeInstance:Kill(reason)
 	end
 end
 

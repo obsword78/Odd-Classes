@@ -10,6 +10,9 @@ type ServerAbilityInstance = {
 	State: AbilityInstanceState,
 	StartTime: number,
 
+	ChargeReleased: boolean?,
+
+	Kill: (self: ServerAbilityInstance, reason: string) -> nil,
 	StopChannel: (self: ServerAbilityInstance, reason: string) -> nil,
 	IsDead: (self: ServerAbilityInstance) -> boolean?,
 }
@@ -24,7 +27,6 @@ local function _startCast(self)
 	task.wait(self.Def.CastTime)
 	self:_Flow(false)
 end
-
 local function _startCharge(self)
 	self.ChargeReleased = false
 	while not self.ChargeReleased and (os.clock() - self.StartTime) < (self.Def.MaxChargeTime or 3) do
@@ -50,7 +52,6 @@ function ServerAbilityInstance.new(abilityDef, caster)
 
 	self.StartTime = os.clock()
 	self.StoppedChannel = false
-	self.Expired = false
 
 	abilityDef = nil -- cleanup variable
 
@@ -74,6 +75,9 @@ function ServerAbilityInstance:_StartCharge()
 end
 
 function ServerAbilityInstance:_Flow(spawn: boolean?)
+	if self:IsDead() then
+		return
+	end
 	if spawn then
 		task.spawn(_flow, self)
 	else -- already running in spawn
@@ -109,13 +113,21 @@ function ServerAbilityInstance:StopChannel(reason: string)
 	self.State.ChannelStopped = true
 	if self._ChannelTickConn then
 		self._ChannelTickConn:Disconnect()
+		self._ChannelTickConn = nil
 	end
 	if self.Def.OnInterrupted then
 		self.Def.OnInterrupted(self.Caster, self.State, reason)
 	end
 end
 
-function ServerAbilityInstance:FullInterrupt(reason: string) end
+function ServerAbilityInstance:Kill(reason: string?)
+	if self.State.Dead then
+		return
+	end
+	self.State.Dead = true
+	ServerAbilityInstance:StopChannel(reason or "Interrupted")
+	self.ChargeReleased = true
+end
 
 function ServerAbilityInstance:IsDead()
 	return (self.Def.ChannelTime and self.State.ChannelStopped) or self.State.Dead

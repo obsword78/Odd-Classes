@@ -96,6 +96,9 @@ function AbilityInstance:_StartCharge()
 end
 
 function AbilityInstance:_Flow(spawn: boolean?)
+	if self:IsDead() then
+		return
+	end
 	if spawn then
 		task.spawn(_flow, self)
 	else -- already running in spawn
@@ -142,10 +145,20 @@ function AbilityInstance:StopChannel(reason: string)
 	end
 	if self._ChannelTickConn then
 		self._ChannelTickConn:Disconnect()
+		self._ChannelTickConn = nil
 	end
 	if self.Def.OnInterrupted then
 		self.Def.OnInterrupted(reason)
 	end
+end
+
+function AbilityInstance:Kill(reason: string)
+	if self.State.Dead then
+		return
+	end
+	self.State.Dead = true
+	AbilityInstance:StopChannel(reason or "Interrupted")
+	self.ChargeReleased = true
 end
 
 function AbilityInstance:IsDead()

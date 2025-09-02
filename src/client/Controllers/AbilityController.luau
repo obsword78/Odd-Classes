@@ -85,6 +85,12 @@ function AbilityController:Release(abilityName: string)
 	end
 end
 
+function AbilityController:Interrupt(reason: string?)
+	for _, activeInstance in AbilityController.ActiveInstances do
+		activeInstance:Kill(reason)
+	end
+end
+
 function AbilityController:ReduceCD(abilityName: string, seconds: number)
 	local abilityDef = checkAbilityValid(abilityName)
 	if not abilityDef then
