@@ -1,6 +1,29 @@
 local EntityStats = {}
 EntityStats.__index = EntityStats
+-------------------------------------------------------
+export type EntityStatsData = {
+	WalkSpeed: number?,
+	JumpPower: number?,
+	MaxHealth: number?,
+	Size: number?,
 
+	Protection: number?,
+	Resist: number?,
+	CritReduction: number?,
+	Immune: number?,
+	Immortal: boolean?,
+
+	[string]: any,
+}
+export type EntityStats = {
+	_data: EntityStatsData,
+	Get: (self: EntityStats, statName: string) -> any,
+	Increment: (self: EntityStats, statName: string, amount: number) -> nil,
+	SetCustomStat: (self: EntityStats, statName: string, value: any) -> nil,
+	ImprintHumanoid: () -> nil,
+	Destroy: () -> nil,
+}
+-------------------------------------------------------
 local function deepCopy(original: { [string]: number })
 	local copy = {}
 	for key, value in pairs(original) do
@@ -82,12 +105,5 @@ function EntityStats:Destroy()
 	self._registryParent[self._refObject] = nil
 	table.clear(self)
 end
-
-export type EntityStats = {
-	Get: (self: EntityStats, statName: string) -> number,
-	Increment: (self: EntityStats, statName: string, amount: number) -> nil,
-	SetCustomStat: (self: EntityStats, statName: string, value: any) -> nil,
-	ImprintHumanoid: (self: EntityStats) -> (),
-}
 
 return EntityStats
