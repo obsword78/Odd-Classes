@@ -26,7 +26,7 @@ export type DamagePacket = {
 }
 ------------------------------------------------
 function DamagePacket.new(params: DamagePacketParams): DamagePacket?
-	if params.source and params.target and params.type and params.amount then
+	if not (params.source and params.target and params.type and params.amount) then
 		warn("Missing essential argument in Damage Packet Parameters. Params Record:", params)
 		return
 	end
