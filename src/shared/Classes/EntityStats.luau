@@ -1,3 +1,5 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local deepcopy = require(ReplicatedStorage.Shared.Utils.deepcopy)
 local EntityStats = {}
 EntityStats.__index = EntityStats
 -------------------------------------------------------
@@ -18,24 +20,13 @@ export type EntityStatsData = {
 export type EntityStats = {
 	_data: EntityStatsData,
 	Get: (self: EntityStats, statName: string) -> any,
+	GetBoolean: (self: EntityStats, statName: string) -> boolean,
 	Increment: (self: EntityStats, statName: string, amount: number) -> nil,
 	SetCustomStat: (self: EntityStats, statName: string, value: any) -> nil,
 	ImprintHumanoid: () -> nil,
 	Destroy: () -> nil,
 }
 -------------------------------------------------------
-local function deepCopy(original: { [string]: number })
-	local copy = {}
-	for key, value in pairs(original) do
-		if type(value) == "table" then
-			copy[key] = deepCopy(value)
-		else
-			copy[key] = value
-		end
-	end
-	return copy
-end
-
 local function imprint_hum_check(self)
 	if not self._refObject then
 		warn("[EntityStats] ImprintHumanoid called without a refObject")
@@ -56,7 +47,7 @@ function EntityStats.new(
 	registryParent: { [Instance]: EntityStats }
 ): EntityStats
 	local self = setmetatable({}, EntityStats)
-	self._data = statisticData and deepCopy(statisticData) or {}
+	self._data = statisticData and deepcopy(statisticData) or {}
 	self._refObject = refObject
 	self._registryParent = registryParent
 	return self
@@ -64,6 +55,10 @@ end
 
 function EntityStats:Get(statName: string)
 	return self._data[statName] or 0
+end
+
+function EntityStats:GetBoolean(statName: string)
+	return self._data[statName] and true or false
 end
 
 function EntityStats:Increment(statName: string, amount: number)
