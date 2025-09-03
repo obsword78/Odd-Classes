@@ -18,26 +18,22 @@ knit.OnStart():andThen(function()
 	PlayerService = knit.GetService("PlayerService")
 end)
 ------------------------------------------
+local function ApplyStatsInstance(object: Model)
+	local player = Players:GetPlayerFromCharacter(object)
+	local humanoid = object:WaitForChild("Humanoid", 10)
 
-function CustomStatsService:KnitInit()
-	print("[CustomStatsService] Initialized")
+	if not humanoid then
+		warn(`[CustomStatsService] Humanoid not found in {object}`)
+		return
+	end
 
-	workspace.ChildAdded:Connect(function(child)
-		local player = Players:GetPlayerFromCharacter(child)
-		if not player then
-			return
-		end
-		local character = child
-		local humanoid = character:WaitForChild("Humanoid", 10)
+	local StatsInstance = EntityStats.new(object, nil, EntityStats_registry)
+	local troveInstance = trove.new()
+	EntityStats_registry[object] = StatsInstance
+	troveInstance:Add(StatsInstance)
+	troveInstance:AttachToInstance(object)
 
-		if not humanoid then
-			warn("[CustomStatsService] Humanoid not found in character")
-			return
-		end
-
-		local StatsInstance = EntityStats.new(character, nil, EntityStats_registry)
-		EntityStats_registry[character] = StatsInstance
-
+	if player then
 		local selectedClass = PlayerService:GetPlayerProfile(player):GetData("SelectedClass")
 		if selectedClass then
 			if ClassCustomStats[selectedClass] then
@@ -46,13 +42,19 @@ function CustomStatsService:KnitInit()
 				end
 			end
 		end
+	end
 
-		StatsInstance:ImprintHumanoid()
+	StatsInstance:ImprintHumanoid()
+end
+------------------------------------------
+function CustomStatsService:KnitStart()
+	print("[CustomStatsService] Initialized")
 
-		local troveInstance = trove.new()
-		troveInstance:Add(StatsInstance)
-		troveInstance:AttachToInstance(player)
-	end)
+	workspace.ChildAdded:Connect(ApplyStatsInstance)
+	ApplyStatsInstance(workspace.Surroundings.Dummy)
+	ApplyStatsInstance(workspace.Surroundings.MovingDummy)
+	ApplyStatsInstance(workspace.Surroundings.MovableDummy)
+	ApplyStatsInstance(workspace.Rig)
 end
 
 function CustomStatsService:GetEntityStats(entity: Model): EntityStats.EntityStats?

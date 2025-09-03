@@ -58,7 +58,7 @@ function DamageService:Apply(damagePacket: DamagePacket.DamagePacket)
 		return
 	end
 	------------------------------------------
-	if targetEntityStats:Get("Immune") then
+	if targetEntityStats:GetBoolean("Immune") then
 		DamageService.DamageApplied:Fire(damagePacket, false)
 		return
 	end
@@ -81,7 +81,7 @@ function DamageService:Apply(damagePacket: DamagePacket.DamagePacket)
 	local damageToDeal = damagePacket.amount / (1 + (defense_to_apply / def_scale))
 	local targetHealth = humanoid.Health - damageToDeal
 	------------------------------------------
-	humanoid.Health = targetEntityStats:Get("Immortal") and math.min(1, targetHealth) or targetHealth
+	humanoid.Health = targetEntityStats:Get("Immortal") and math.max(1, targetHealth) or targetHealth
 
 	DamageService.DamageApplied:Fire(damagePacket, humanoid.Health <= 0)
 	return humanoid.Health <= 0
