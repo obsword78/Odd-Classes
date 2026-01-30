@@ -3,7 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.knit)
 
 local EffectInstance = require(ReplicatedStorage.Shared.Classes.EffectInstance)
-local EffectRegistry = require(ReplicatedStorage.Shared.Data.EffectRegistry)
+local EffectRegistry = require(ReplicatedStorage.Shared.ReplicatedData.EffectRegistry)
 --=================================================
 local EffectService = Knit.CreateService({
 	Name = "EffectService",

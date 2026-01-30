@@ -1,7 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local AbilityInstance = require(ReplicatedStorage.Shared.Classes.AbilityInstance)
-local AbilityDefinitions = require(ServerScriptService.Server.Data.ServerAbilityDefinitions)
+local AbilityDefinitions = require(ServerScriptService.Server.ServerData.ServerAbilityDefinitions)
 local knit = require(ReplicatedStorage.Packages.knit)
 
 local AbilityService = knit.CreateService({
