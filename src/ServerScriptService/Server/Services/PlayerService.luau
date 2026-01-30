@@ -1,11 +1,11 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local ServerScriptService = game:GetService("ServerScriptService")
-local ClassCustomStats = require(ServerScriptService.Server.Data.ClassCustomStats)
+local ClassCustomStats = require(ServerScriptService.Server.ServerData.ClassCustomStats)
 local ProfileStore = require(ServerScriptService.ServerPackages.ProfileStore)
 local knit = require(ReplicatedStorage.Packages.knit)
 local trove = require(ReplicatedStorage.Packages.trove)
-local EntityStats = require(ReplicatedStorage.Shared.Classes.EntityStats)
+local Entity = require(ReplicatedStorage.Shared.Classes.Entity)
 
 local PlayerService = knit.CreateService({
 	Name = "PlayerService",
@@ -22,9 +22,9 @@ local PROFILE_TEMPLATE = {
 local PlayerStore = ProfileStore.New("PlayerProfiles", PROFILE_TEMPLATE)
 local PlayerStoreProfiles: { [Player]: typeof(PlayerStore:StartSessionAsync()) } = {}
 ---------------------------------------------------------------
-local CustomStatsService
+local EntityService
 knit.OnStart():andThen(function()
-	CustomStatsService = knit.GetService("CustomStatsService")
+	EntityService = knit.GetService("EntityService")
 end)
 ---------------------------------------------------------------
 function PlayerService:KnitInit()
@@ -81,12 +81,12 @@ function PlayerService.Client:SelectClass(player: Player, className: string)
 		return
 	end
 
-	local entityStats: EntityStats.EntityStats = CustomStatsService:GetEntityStats(player.Character)
+	local entity: Entity.Entity = EntityService:GetEntity(player.Character)
 	for statName, baseValue in pairs(ClassCustomStats[className]) do
-		entityStats:SetCustomStat(statName, baseValue)
+		entity:SetCustomStat(statName, baseValue)
 	end
 
-	entityStats:ImprintHumanoid()
+	entity:ImprintHumanoid()
 end
 
 return PlayerService
