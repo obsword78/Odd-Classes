@@ -1,5 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ClientAbilityDefinitions = require(ReplicatedStorage.Shared.Data.ClientAbilityDefinitions)
+local ClientAbilityDefinitions = require(ReplicatedStorage.Shared.ReplicatedData.ClientAbilityDefinitions)
 local RunService = game:GetService("RunService")
 local knit = require(ReplicatedStorage.Packages.knit)
 local BattleGuiController

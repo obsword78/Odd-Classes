@@ -1,7 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local knit = require(ReplicatedStorage.Packages.knit)
-local AbilityGuiSets = require(ReplicatedStorage.Shared.Data.AbilityGuiSets)
+local AbilityGuiSets = require(ReplicatedStorage.Shared.ReplicatedData.AbilityGuiSets)
 
 local BattleGui = game.Players.LocalPlayer.PlayerGui:WaitForChild("BattleGUI")
 local AbilitySlotsFrame = BattleGui.AbilitySlots

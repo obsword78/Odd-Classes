@@ -1,6 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local knit = require(ReplicatedStorage.Packages.knit)
-local ClassInputs = require(ReplicatedStorage.Shared.Data.ClassInputs)
+local ClassInputs = require(ReplicatedStorage.Shared.ReplicatedData.ClassInputs)
 
 local AbilityService
 local AbilityController

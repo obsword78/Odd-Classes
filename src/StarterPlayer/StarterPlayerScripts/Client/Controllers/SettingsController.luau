@@ -1,6 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local knit = require(ReplicatedStorage.Packages.knit)
-local DefaultSettings = require(ReplicatedStorage.Shared.Data.DefaultSettings)
+local DefaultSettings = require(ReplicatedStorage.Shared.ReplicatedData.DefaultSettings)
 
 local SettingsController = knit.CreateController({
 	Name = "SettingsController",
