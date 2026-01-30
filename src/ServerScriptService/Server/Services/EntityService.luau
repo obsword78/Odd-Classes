@@ -1,12 +1,12 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
-local ClassCustomStats = require(ServerScriptService.Server.Data.ClassCustomStats)
+local ClassCustomStats = require(ServerScriptService.Server.ServerData.ClassCustomStats)
 local knit = require(ReplicatedStorage.Packages.knit)
 local trove = require(ReplicatedStorage.Packages.trove)
 
-local CustomStatsService = knit.CreateService({
-	Name = "CustomStatsService",
+local EntityService = knit.CreateService({
+	Name = "EntityService",
 	Client = {},
 })
 
@@ -23,7 +23,7 @@ local function ApplyStatsInstance(object: Model)
 	local humanoid = object:WaitForChild("Humanoid", 10)
 
 	if not humanoid then
-		warn(`[CustomStatsService] Humanoid not found in {object}`)
+		warn(`[EntityService] Humanoid not found in {object}`)
 		return
 	end
 
@@ -47,8 +47,8 @@ local function ApplyStatsInstance(object: Model)
 	StatsInstance:ImprintHumanoid()
 end
 ------------------------------------------
-function CustomStatsService:KnitStart()
-	print("[CustomStatsService] Initialized")
+function EntityService:KnitStart()
+	print("[EntityService] Initialized")
 
 	workspace.ChildAdded:Connect(ApplyStatsInstance)
 	ApplyStatsInstance(workspace.Surroundings.Dummy)
@@ -57,8 +57,8 @@ function CustomStatsService:KnitStart()
 	ApplyStatsInstance(workspace.Rig)
 end
 
-function CustomStatsService:GetEntityStats(entity: Model): EntityStats.EntityStats?
+function EntityService:GetEntityStats(entity: Model): EntityStats.EntityStats?
 	return EntityStats_registry[entity]
 end
 
-return CustomStatsService
+return EntityService
