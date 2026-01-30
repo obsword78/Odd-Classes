@@ -2,10 +2,11 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local knit = require(ReplicatedStorage.Packages.knit)
 local signal = require(ReplicatedStorage.Packages.signal)
 local DamagePacket = require(ReplicatedStorage.Shared.Classes.DamagePacket)
-local CustomStatsService
+local HealthLayers = require(ReplicatedStorage.Shared.Classes.Entity.HealthLayers)
+local EntityService
 ----------------------------------------------------------
 knit.OnStart():andThen(function()
-	CustomStatsService = knit.GetService("CustomStatsService")
+	EntityService = knit.GetService("EntityService")
 end)
 ------------------------------------------
 local DamageService = knit.CreateService({
@@ -53,19 +54,19 @@ function DamageService:Apply(damagePacket: DamagePacket.DamagePacket)
 		return
 	end
 	------------------------------------------
-	local targetEntityStats = CustomStatsService:GetEntityStats(damagePacket.target)
-	if not targetEntityStats then
+	local targetEntity = EntityService:GetEntity(damagePacket.target)
+	if not targetEntity then
 		return
 	end
 	------------------------------------------
-	if targetEntityStats:GetBoolean("Immune") then
+	if targetEntity:GetBoolean("Immune") then
 		DamageService.DamageApplied:Fire(damagePacket, false)
 		return
 	end
 	------------------------------------------
-	local targetProtection = targetEntityStats:Get("Protection")
-	local targetResist = targetEntityStats:Get("Resist")
-	local targetCritReduc = targetEntityStats:Get("CritReduction")
+	local targetProtection = targetEntity:GetStatValue("Protection")
+	local targetResist = targetEntity:GetStatValue("Resist")
+	local targetCritReduc = targetEntity:GetStatValue("CritReduction")
 	if damagePacket.modifications then
 		targetProtection, targetResist = apply_modifications(damagePacket, targetProtection, targetResist)
 	end
@@ -78,17 +79,46 @@ function DamageService:Apply(damagePacket: DamagePacket.DamagePacket)
 	local defense_to_apply = (damagePacket.type == "physical" and targetProtection)
 		or (damagePacket.type == "magical" and targetResist)
 		or 0
-	local damageToDeal = damagePacket.amount / (1 + (defense_to_apply / def_scale))
-	local targetHealth = humanoid.Health - damageToDeal
+	damagePacket.amount /= (1 + (defense_to_apply / def_scale))
+
+	if damagePacket.type == "heal" then
+		local viability = targetEntity:GetStatValue("Viability")
+		damagePacket.amount *= viability / 100
+	end
 	------------------------------------------
-	humanoid.Health = targetEntityStats:Get("Immortal") and math.max(1, targetHealth) or targetHealth
+	local healthRuntimeData = targetEntity:GetRuntimeData("Health")
+	local orderedHealthLayers = healthRuntimeData:GetOrdered()
+
+	for _, healthLayer: HealthLayers.HealthLayer in pairs(orderedHealthLayers) do
+		if healthLayer.AbsorbCondition and not healthLayer.AbsorbCondition(damagePacket) then
+			continue
+		end
+
+		local remainingHealthLayer = healthLayer.AbsorbModification(healthLayer.CurrentValue, damagePacket)
+		local isImmortal = targetEntity:GetStatValue("Immortal")
+		if isImmortal and healthLayer.AttemptKillUponDeplete then
+			healthLayer.CurrentValue = math.max(1, remainingHealthLayer)
+		else
+			healthLayer.CurrentValue = remainingHealthLayer
+		end
+		if healthLayer.OnAbsorb then
+			healthLayer.OnAbsorb(damagePacket)
+		end
+		if remainingHealthLayer <= 0 and healthLayer.OnDeplete then
+			healthLayer.OnDeplete(damagePacket)
+		end
+		if damagePacket.amount <= 0 then
+			break
+		end
+	end
+	------------------------------------------
+	humanoid.Health = orderedHealthLayers[1].CurrentValue
 
 	DamageService.DamageApplied:Fire(damagePacket, humanoid.Health <= 0)
-	return humanoid.Health <= 0
 end
 
-function DamageService:IsAttackingMe(damagePacket: DamagePacket.DamagePacket, me: Model, attacker: Model)
-	return damagePacket.target == me and damagePacket.source == attacker
-end
+-- function DamageService:IsAttackingMe(damagePacket: DamagePacket.DamagePacket, me: Model, attacker: Model)
+-- 	return damagePacket.target == me and damagePacket.source == attacker
+-- end
 
 return DamageService
