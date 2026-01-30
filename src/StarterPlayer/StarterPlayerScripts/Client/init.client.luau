@@ -12,4 +12,4 @@ knit.Start()
 
 local ClassController = knit.GetController("ClassController")
 task.wait(2)
-ClassController:Select("Physical")
+ClassController:Select("Engager")

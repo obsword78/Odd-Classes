@@ -23,7 +23,7 @@ export type EntityStats = {
 	GetBoolean: (self: EntityStats, statName: string) -> boolean,
 	Increment: (self: EntityStats, statName: string, amount: number) -> nil,
 	SetCustomStat: (self: EntityStats, statName: string, value: any) -> nil,
-	ImprintHumanoid: () -> nil,
+	ImprintHumanoid: (self: EntityStats) -> nil,
 	Destroy: () -> nil,
 }
 -------------------------------------------------------
@@ -72,7 +72,7 @@ function EntityStats:SetCustomStat(statName: string, value: any)
 	self._data[statName] = value
 end
 
--- Built-in to imprint statistics to the refObject if it is a Humanoid
+-- Imprint CustomStats, which are meant for the Humanoid, onto the Humanoid
 function EntityStats:ImprintHumanoid()
 	if not imprint_hum_check(self) then
 		return

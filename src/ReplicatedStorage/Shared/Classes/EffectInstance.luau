@@ -52,6 +52,8 @@ function EffectInstance:IsExpired()
 	return os.clock() >= self.endTime
 end
 
-function EffectInstance:Destroy() end
+function EffectInstance:Destroy()
+	coroutine.wrap(self.descriptor.onRemove)(self)
+end
 
 return EffectInstance

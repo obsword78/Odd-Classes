@@ -5,6 +5,7 @@ local ClassCustomStats = require(ServerScriptService.Server.Data.ClassCustomStat
 local ProfileStore = require(ServerScriptService.ServerPackages.ProfileStore)
 local knit = require(ReplicatedStorage.Packages.knit)
 local trove = require(ReplicatedStorage.Packages.trove)
+local EntityStats = require(ReplicatedStorage.Shared.Classes.EntityStats)
 
 local PlayerService = knit.CreateService({
 	Name = "PlayerService",
@@ -80,7 +81,7 @@ function PlayerService.Client:SelectClass(player: Player, className: string)
 		return
 	end
 
-	local entityStats = CustomStatsService:GetEntityStats(player.Character)
+	local entityStats: EntityStats.EntityStats = CustomStatsService:GetEntityStats(player.Character)
 	for statName, baseValue in pairs(ClassCustomStats[className]) do
 		entityStats:SetCustomStat(statName, baseValue)
 	end

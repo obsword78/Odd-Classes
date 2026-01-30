@@ -50,9 +50,9 @@ function EffectService:KnitStart()
 				for effectName, effect in pairs(effects) do
 					if effect:IsExpired() then
 						self:RemoveEffect(target, effectName)
-					elseif effect.Definition.OnTick and effect.Definition.TickRate then
-						if not effect._lastTick or os.clock() - effect._lastTick >= effect.Definition.TickRate then
-							effect.Definition.OnTick(effect)
+					elseif effect.descriptor.onTick and effect.descriptor.tickInterval then
+						if not effect._lastTick or os.clock() - effect._lastTick >= effect.descriptor.tickInterval then
+							effect.descriptor.onTick(effect)
 							effect._lastTick = os.clock()
 						end
 					end
