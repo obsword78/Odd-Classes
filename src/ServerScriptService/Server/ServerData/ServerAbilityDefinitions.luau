@@ -3,13 +3,13 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local EffectService = require(ServerScriptService.Server.Services.EffectService)
 local knit = require(ReplicatedStorage.Packages.knit)
 local DamagePacket = require(ReplicatedStorage.Shared.Classes.DamagePacket)
-local StaticAbilityDefinitions = require(ReplicatedStorage.Shared.Data.StaticAbilityDefinitions)
-local CustomStatsService
+local StaticAbilityDefinitions = require(ReplicatedStorage.Shared.ReplicatedData.StaticAbilityDefinitions)
+local EntityService
 local PoolService
 local DamageService
 --------------------------------------
 knit.OnStart():andThen(function()
-	CustomStatsService = knit.GetService("CustomStatsService")
+	EntityService = knit.GetService("EntityService")
 	PoolService = knit.GetService("PoolService")
 	DamageService = knit.GetService("DamageService")
 end)
@@ -43,7 +43,7 @@ local ServerAbilityDefinitions: { [string]: ServerDefinition } = {}
 ServerAbilityDefinitions.Punch = setmetatable({
 	Name = "Punch",
 	Execute = function(caster, state)
-		-- local entityStats = CustomStatsService:GetEntityStats(caster.Character)
+		-- local entityStats = EntityService:GetEntity(caster.Character)
 		local newDamagePacket = DamagePacket.new({
 			amount = 10,
 			type = "physical",
@@ -68,7 +68,7 @@ ServerAbilityDefinitions.MovingForce = setmetatable({
 	Name = "MovingForce",
 	ChannelTickRate = 0.02,
 	OnChargeStart = function(caster: Player)
-		local entityStats = CustomStatsService:GetEntityStats(caster.Character)
+		local entityStats = EntityService:GetEntity(caster.Character)
 		entityStats:Increment("Stamina", -10)
 	end,
 	Execute = function(caster: Player, state)
@@ -167,7 +167,7 @@ ServerAbilityDefinitions.MovingForce = setmetatable({
 ServerAbilityDefinitions.HeavyImpact = setmetatable({
 	Name = "HeavyImpact",
 	Execute = function(caster, state)
-		local entityStats = CustomStatsService:GetEntityStats(caster.Character)
+		local entityStats = EntityService:GetEntity(caster.Character)
 		-- Punch cooldown reset
 		entityStats:SetCustomStat("EmpowerPunch", true)
 	end,
@@ -176,7 +176,7 @@ ServerAbilityDefinitions.HeavyImpact = setmetatable({
 ServerAbilityDefinitions.FinalAdrenaline = setmetatable({
 	Name = "FinalAdrenaline",
 	Execute = function(caster, state)
-		local entityStats = CustomStatsService:GetEntityStats(caster.Character)
+		local entityStats = EntityService:GetEntity(caster.Character)
 		entityStats:SetCustomStat("FinalAdrenaline", true)
 	end,
 }, StaticAbilityDefinitions.MetaTable)
