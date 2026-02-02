@@ -36,7 +36,7 @@ function AbilityController:KnitInit()
 				end
 				table.insert(undeadInstances, activeInstance)
 			end
-			if #undeadInstances <= 0 then
+			if next(undeadInstances) == nil then
 				continue
 			end
 			table.clear(AbilityController.ActiveInstances)

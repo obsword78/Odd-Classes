@@ -51,10 +51,10 @@ end
 
 function Pool:acquire(): ActivePoolObject
 	local item
-	if #self.available > 0 then
-		item = table.remove(self.available)
-	else
+	if next(self.available) == nil then
 		item = cloneWrapper(self.template)
+	else
+		item = table.remove(self.available)
 	end
 	return ActivePoolObject.new(self, item)
 end

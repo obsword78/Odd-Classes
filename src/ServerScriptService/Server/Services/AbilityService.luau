@@ -31,7 +31,7 @@ function AbilityService:KnitInit()
 					end
 					table.insert(undeadInstances, activeInstance)
 				end
-				if #undeadInstances <= 0 then
+				if next(undeadInstances) == nil then
 					continue
 				end
 				table.clear(AbilityService.ActiveInstances[player])
@@ -83,6 +83,8 @@ function AbilityService.Client:Release(player, abilityName)
 		break
 	end
 end
+
+---------------------------------------------------------------
 
 function AbilityService:Interrupt(player: Player, reason: string?)
 	if not AbilityService.ActiveInstances[player] then
