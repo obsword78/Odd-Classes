@@ -1,16 +1,22 @@
-local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ComponentTypes = require(ReplicatedStorage.Shared.Types.ParabolicTravellerComponentTypes)
+
 local ParabolicTraveller = {}
 ParabolicTraveller.__index = ParabolicTraveller
 ----------------------------------------------------
-type ParabolicTravellerParams = {
+export type ParabolicTravellerParams = {
 	start: Vector3, -- required
 	duration: number, -- required
 	gravity: Vector3?, -- optional, default = workspace.Gravity
 	force: Vector3?, -- direction-based
 	target: Vector3?, -- target-based
 	ignoreList: { Instance }?,
+	travellerComponents: {
+		CollisionComponent: ComponentTypes.CollisionComponent?,
+		ImpactComponent: ComponentTypes.ImpactComponent?,
+	},
 }
-type ParabolicTraveller = {
+export type ParabolicTraveller = {
 	-- Properties
 	Start: Vector3,
 	Direction: Vector3,
@@ -21,6 +27,9 @@ type ParabolicTraveller = {
 	Gravity: Vector3,
 	RaycastParams: RaycastParams,
 	_LastPos: Vector3,
+
+	CollisionComponent: ComponentTypes.CollisionComponent?,
+	ImpactComponent: ComponentTypes.ImpactComponent?,
 
 	-- Methods
 	Step: (self: ParabolicTraveller, dt: number) -> Vector3,
@@ -37,7 +46,18 @@ function ParabolicTraveller.new(params: ParabolicTravellerParams): ParabolicTrav
 	self.RaycastParams = RaycastParams.new()
 	self._LastPos = self.Start
 
-	self.RaycastParams.FilterDescendantsInstances = params.ignoreList
+	if params.travellerComponents then
+		if params.travellerComponents.CollisionComponent then
+			self.CollisionComponent = params.travellerComponents.CollisionComponent
+		end
+		if params.travellerComponents.ImpactComponent then
+			self.ImpactComponent = params.travellerComponents.ImpactComponent
+		end
+	end
+
+	-- TODO: put this in collision component
+	self.RaycastParams.FilterDescendantsInstances = params.ignoreList or { workspace.Terrain }
+	self.RaycastParams.FilterType = Enum.RaycastFilterType.Include
 
 	if params.target then
 		if params.force then
@@ -59,7 +79,7 @@ function ParabolicTraveller.new(params: ParabolicTravellerParams): ParabolicTrav
 	return self
 end
 
-function ParabolicTraveller:Step(dt): RaycastResult
+function ParabolicTraveller:Step(dt): (Vector3, RaycastResult?)
 	assert(dt and typeof(dt) == "number", 'Needs valid "dt" argument')
 	self.Elapsed += dt
 	local t = math.clamp(self.Elapsed / self.Duration, 0, 1)
@@ -67,14 +87,13 @@ function ParabolicTraveller:Step(dt): RaycastResult
 	local vertical = 0.5 * self.Gravity * (self.Duration * t) ^ 2
 	local nextPos = self.Start + horizontal + vertical
 
-	local raycastResult = Workspace:Raycast(self._LastPos, nextPos - self.Start, self.RaycastParams)
-	if raycastResult then
-		nextPos = raycastResult.Position
+	if self.CollisionComponent then
+		self.CollisionComponent:StoreResult(self._LastPos, nextPos)
 	end
 
 	self._LastPos = nextPos
 
-	return raycastResult
+	return nextPos, self.CollisionComponent and self.CollisionComponent.RaycastResult
 end
 
 function ParabolicTraveller:Ignore(instance: Instance | { Instance })
@@ -83,6 +102,10 @@ end
 
 function ParabolicTraveller:IsDone()
 	return self.Elapsed >= self.Duration
+end
+
+function ParabolicTraveller:Cancel()
+	self.Elapsed = self.Duration
 end
 
 return ParabolicTraveller
