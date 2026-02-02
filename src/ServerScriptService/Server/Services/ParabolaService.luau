@@ -32,17 +32,18 @@ local function stepped(dt)
 	end
 end
 --------------------------------------------------------
-function ParabolaService:Create(object: Model, params)
-	params.index = #object_registry + 1
+function ParabolaService:Create(object: Model, params: ParabolicTraveller.ParabolicTravellerParams)
+	local index = #object_registry + 1
 	local travellerInstance = ParabolicTraveller.new(params)
 
-	traveller_registry[params.index] = travellerInstance
-	object_registry[params.index] = object
-	cframe_registry[params.index] = CFrame.new(params.start)
+	travellerInstance.RegistryIndex = index
+	traveller_registry[index] = travellerInstance
+	object_registry[index] = object
+	cframe_registry[index] = CFrame.new(params.start)
 
 	if not runtimeConnection then
 		runtimeConnection = RunService.Heartbeat:Connect(stepped)
 	end
 end
---------------------------------------------------------s
+--------------------------------------------------------
 return ParabolaService
