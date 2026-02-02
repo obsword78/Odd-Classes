@@ -24,10 +24,12 @@ function RegenSystem:KnitStart()
 			for _, entity in pairs(Entities_registry) do
 				local totalTickRegen = 0
 				if entity:GetBoolean("BaseRegeneration") then
-					totalTickRegen += entity:GetStatValue("BaseRegeneration") * regenRate
+					totalTickRegen += entity:GetStatValue("BaseRegeneration")
 				end
-				if entity:GetBoolean("BonusRegeneration") then
-					totalTickRegen += entity:GetStatValue("BonusRegeneration") * regenRate
+				if entity:GetRuntimeData("BonusRegeneration") then
+					for _, value in pairs(entity:GetRuntimeData("BonusRegeneration")) do
+						totalTickRegen += value
+					end
 				end
 
 				if
@@ -38,7 +40,7 @@ function RegenSystem:KnitStart()
 				end
 
 				local regenPacket = DamagePacket.new({
-					amount = -totalTickRegen,
+					amount = -totalTickRegen * regenRate,
 					type = "healing",
 					source = entity._refObject,
 					target = entity._refObject,
