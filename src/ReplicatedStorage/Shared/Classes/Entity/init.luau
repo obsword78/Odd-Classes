@@ -16,6 +16,8 @@ export type EntityStatData = { -- numbers or booleans
 	Rejection: number?, -- chance to reject negative effects
 	CritReduction: number?, -- (0% to 100%)
 
+	BaseRegeneration: number, -- base health per second
+
 	CritChance: number?,
 
 	Immune: number?,
@@ -26,6 +28,7 @@ export type EntityStatData = { -- numbers or booleans
 
 export type EntityRuntimeData = { -- data that with object references
 	Health: HealthLayers.HealthLayers,
+	BonusRegeneration: { [string]: number }?, -- heal over time values
 }
 
 export type Entity = {
@@ -38,6 +41,7 @@ export type Entity = {
 	Increment: (self: Entity, statName: string, amount: number) -> nil,
 	SetCustomStat: (self: Entity, statName: string, value: any) -> nil,
 	ImprintHumanoid: (self: Entity) -> nil,
+	GetRuntimeData: (self: Entity, dataName: string) -> any,
 	Destroy: () -> nil,
 }
 -------------------------------------------------------
@@ -58,15 +62,17 @@ end
 function Entity.new(refObject: Instance?, statisticData: { [string]: number }?, runtimeData: EntityRuntimeData?): Entity
 	local self = setmetatable({}, Entity)
 	self._data = statisticData and deepcopy(statisticData) or {}
-	self._runtimeData = runtimeData or {
-		Health = HealthLayers.new(self._data.MaxBaseHealth or 100),
-	}
+	self._runtimeData = runtimeData
+		or {
+			Health = HealthLayers.new(self._data.MaxBaseHealth or 100),
+			BonusRegeneration = {},
+		}
 	self._refObject = refObject
 	return self
 end
 ----------------------------------------------------------------------------------
 function Entity:GetStatValue(statName: string)
-	return self._data[statName] or 0
+	return self._data[statName]
 end
 
 function Entity:GetBoolean(statName: string)
@@ -78,6 +84,13 @@ function Entity:Increment(statName: string, amount: number)
 		self:SetCustomStat(statName, amount)
 	end
 	self._data[statName] += amount
+end
+
+function Entity:ClampIncrement(statName: string, amount: number, min: number, max: number)
+	if not self._data[statName] then
+		self:SetCustomStat(statName, 0)
+	end
+	self._data[statName] = math.clamp(self._data[statName] + amount, min, max)
 end
 
 function Entity:SetCustomStat(statName: string, value: any)
@@ -121,6 +134,7 @@ function Entity:Destroy() -- TODO: This is not enough
 	self._data = nil
 	self._runtimeData = nil
 	self._refObject = nil
+	table.freeze(self)
 end
 
 return Entity
