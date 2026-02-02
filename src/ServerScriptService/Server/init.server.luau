@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local knit = require(ReplicatedStorage.Packages.knit)
 
 knit.AddServices(script.Services)
+knit.AddServices(script.Systems)
 
 knit.Start()
 	:andThen(function()
