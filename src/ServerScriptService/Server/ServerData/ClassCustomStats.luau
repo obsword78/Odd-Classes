@@ -11,8 +11,12 @@ ClassCustomStats.Physical = {
 	Viability = 100,
 	Rejection = 2,
 	CritReduction = 0,
+
+	BaseRegeneration = 2,
 	--------------
 	Stamina = 100,
+	--------------
+	PassiveDefinitionName = "Stamina",
 }
 
 ClassCustomStats.Engager = {
@@ -22,6 +26,7 @@ ClassCustomStats.Engager = {
 	JumpPower = 60,
 	--------------
 	--------------
+	PassiveDefinitionName = "Opportunity",
 }
 
 return ClassCustomStats
